@@ -1,0 +1,12 @@
+{
+  "name": "pronote-notifications-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Androz2091 <androz2091@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-gcm": "^1.0.3",
+    "pronote-api": "^2.1.3"
+  }
+}
