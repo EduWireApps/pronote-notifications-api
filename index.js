@@ -1,4 +1,5 @@
 const config = require('./config.json')
+const fetch = require('node-fetch')
 
 // Start express server
 const express = require('express')
@@ -14,10 +15,70 @@ const database = new DatabaseService()
 const pronote = new PronoteService()
 const firebase = new FirebaseService()
 
-const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens()])
+const synchronize = () => {
+    database.users.forEach((userAuth) => {
+        const oldCache = database.usersCaches.find((cache) => {
+            return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
+        })
+        pronote.checkSession(userAuth, oldCache).then(([notifications, newCache]) => {
+            if (notifications.length > 0) {
+                const tokens = database.usersTokens.find((token) => {
+                    return token.pronoteUsername === userAuth.pronoteUsername && token.pronoteURL === userAuth.pronoteUsername
+                })
+                const homeworksTokens = tokens.filter((token) => token.homeworksEnabled)
+                const marksTokens = tokens.filter((token) => token.marksEnabled)
+                notifications.forEach((notificationData) => {
+                    const notification = firebase.buildNotification(notificationData)
+                    if (notification.type === 'homework') {
+                        firebase.sendNotification(notification, homeworksTokens)
+                    } else if (notification.type === 'mark') {
+                        firebase.sendNotification(notification, marksTokens)
+                    }
+                })
+            }
+            database.updateUserCache(userAuth, newCache)
+        })
+    })
+}
 
-app.use('/', async (req, res) => {
-    await initDB()
+const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens()])
+initDB.then(() => synchronize())
+setInterval(() => {
+    synchronize()
+}, 15 * 60 * 60 * 1000)
+
+app.use('/login', async (req, res) => {
+    await initDB
+
+    const body = req.body
+    const userAuth = {
+        pronoteUsername: body.pronote_username,
+        pronotePassword: body.pronote_password,
+        pronoteURL: body.pronote_url
+    }
+
+    const existingUser = database.users.find((user) => {
+        return user.pronoteUsername === userAuth.pronoteUsername && user.pronotePassword === userAuth.pronotePassword
+    })
+
+    if (!existingUser) {
+        return res.status(403).send({
+            success: false,
+            code: 3,
+            message: 'Votre compte est introuvable.'
+        })
+    } else {
+        return res.status(200).send({
+            success: true,
+            avatarBase64: existingUser.avatarBase64,
+            fullName: existingUser.fullName,
+            studentClass: existingUser.studentClass
+        })
+    }
+})
+
+app.use('/register', async (req, res) => {
+    await initDB
 
     const body = req.body
     const userAuth = {
@@ -54,11 +115,24 @@ app.use('/', async (req, res) => {
             database.createUser(userAuth)
         }
 
-        res.status(200).send({
-            success: true,
-            message: 'Connexion réussie.',
-            name: session.user.username,
-            avatar_url: session.user.avatar
+        fetch(session.user.avatar).then((result) => {
+            result.buffer().then((buffer) => {
+                const imageBuffer = Buffer.from(buffer).toString('base64')
+                res.status(200).send({
+                    success: true,
+                    avatarBase64: imageBuffer,
+                    fullName: session.user.name,
+                    studentClass: session.user.studentClass.name
+                })
+                database.createUser({
+                    ...userAuth,
+                    ...{
+                        avatarBase64: imageBuffer,
+                        fullName: session.user.name,
+                        studentClass: session.user.studentClass.name
+                    }
+                })
+            })
         })
     }).catch((error) => {
         let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'

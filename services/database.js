@@ -34,7 +34,10 @@ class DatabaseService {
                         pronoteURL: row.pronote_url,
                         pronoteUsername: row.pronote_username,
                         pronotePassword: row.pronote_password,
-                        pronoteCAS: row.pronote_cas
+                        pronoteCAS: row.pronote_cas,
+                        avatarBase64: row.avatar_base64,
+                        fullName: row.full_name,
+                        studentClass: row.student_class
                     }
                 })
                 resolve()
@@ -131,18 +134,21 @@ class DatabaseService {
         })
     }
 
-    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS }) {
+    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass }) {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users
-                (pronote_username, pronote_password, pronote_url, pronote_cas) VALUES
-                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}');
+                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class) VALUES
+                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}');
             `).then(() => {
                 const user = {
                     pronoteUsername,
                     pronotePassword,
                     pronoteURL,
-                    pronoteCAS
+                    pronoteCAS,
+                    avatarBase64,
+                    fullName,
+                    studentClass
                 }
                 this.users.push(user)
                 resolve(user)
