@@ -2,7 +2,7 @@ const pronote = require('pronote-api')
 const DATE_END_OF_YEAR = new Date(Date.now() + 31536000000)
 
 class PronoteService {
-    async checkSession (userAuth, oldCache) {
+    async checkSession (userAuth, oldCache = {}) {
         const notifications = []
         let newCache = oldCache
 

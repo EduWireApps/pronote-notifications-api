@@ -1,9 +1,30 @@
 const GCM = require('node-gcm')
+const fetch = require('node-fetch')
 const config = require('../config.json')
 
 class FirebaseService {
     constructor () {
-        this.sender = new GCM.Sender(config.googleCloudMessagingServerKey)
+        this.serverKey = config.googleCloudMessagingServerKey
+        this.sender = new GCM.Sender(this.serverKey)
+    }
+
+    verifyToken (token) {
+        return new Promise((resolve) => {
+            fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: {
+                    Authorization: `key=${this.serverKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    registration_ids: [token]
+                })
+            }).then((res) => {
+                res.json().then((data) => {
+                    resolve(!(data.results[0].error === 'InvalidRegistration'))
+                })
+            })
+        })
     }
 
     buildNotification () {

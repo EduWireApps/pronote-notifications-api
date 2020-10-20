@@ -155,6 +155,27 @@ class DatabaseService {
             })
         })
     }
+
+    createToken ({ pronoteUsername, pronoteURL }, token) {
+        return new Promise((resolve) => {
+            this.query(`
+                INSERT INTO users_tokens
+                (pronote_username, pronote_url, fcm_token, is_active, notifications_homeworks, notifications_marks) VALUES
+                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, true);
+            `).then(() => {
+                const userToken = {
+                    pronoteUsername,
+                    pronoteURL,
+                    fcmToken: token,
+                    isActive: true,
+                    notificationsHomeworks: true,
+                    notificationsMarks: true
+                }
+                this.usersTokens.push(userToken)
+                resolve(userToken)
+            })
+        })
+    }
 };
 
 module.exports = DatabaseService
