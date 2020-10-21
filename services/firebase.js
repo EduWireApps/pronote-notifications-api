@@ -1,11 +1,13 @@
-const GCM = require('node-gcm')
+const firebase = require('firebase-admin')
 const fetch = require('node-fetch')
 const config = require('../config.json')
 
 class FirebaseService {
     constructor () {
         this.serverKey = config.googleCloudMessagingServerKey
-        this.sender = new GCM.Sender(this.serverKey)
+        this.app = firebase.initializeApp({
+            credential: firebase.credential.cert(config.serviceAccountKey)
+        })
     }
 
     verifyToken (token) {
@@ -27,36 +29,14 @@ class FirebaseService {
         })
     }
 
-    buildNotification () {
-        return new GCM.Message({
-            collapseKey: 'demo',
-            priority: 'high',
-            contentAvailable: true,
-            delayWhileIdle: true,
-            timeToLive: 3,
-            restrictedPackageName: 'com.androz2091.pronotenotifications',
-            dryRun: false,
+    sendNotification (notification, tokens) {
+        firebase.messaging().sendMulticast({
             data: {
-                key1: 'message1',
-                key2: 'message2'
             },
-            notification: {
-                title: 'Hello, World',
-                icon: 'ic_launcher',
-                body: 'This is a notification that will be displayed if your app is in the background.'
-            }
-        })
-    }
-
-    sendNotification (message, tokens) {
-        console.log(message, tokens)
-        this.sender.send(message, {
-            registrationTokens: tokens
-        }, (error, response) => {
-            console.log(response)
-            if (error) console.error(error)
-            else {
-            }
+            notification,
+            tokens
+        }).then((response) => {
+            console.log(response.responses.map((e) => e.error))
         })
     }
 }

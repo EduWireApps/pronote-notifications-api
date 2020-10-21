@@ -35,7 +35,10 @@ const synchronize = () => {
                 const homeworksTokens = tokens.filter((token) => token.notificationsHomeworks).map((token) => token.fcmToken)
                 const marksTokens = tokens.filter((token) => token.notificationsMarks).map((token) => token.fcmToken)
                 notifications.forEach((notificationData) => {
-                    const notification = firebase.buildNotification(notificationData)
+                    const notification = {
+                        title: notificationData.title,
+                        body: notificationData.body
+                    }
                     if (notificationData.type === 'homework') {
                         firebase.sendNotification(notification, homeworksTokens)
                     } else if (notificationData.type === 'mark') {

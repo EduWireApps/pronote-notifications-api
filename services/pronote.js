@@ -37,7 +37,7 @@ class PronoteService {
                 newHomeworks.forEach((work) => notifications.push({
                     type: 'homework',
                     title: `Nouveau devoir en ${work.title}`,
-                    message: work.description
+                    body: work.description
                 }))
             }
         }
@@ -67,7 +67,7 @@ class PronoteService {
                     notifications.push({
                         type: 'mark',
                         title: `Nouvelle note en ${markNotif.subject.name}`,
-                        message: `Moyenne de la classe: ${markNotif.mark.average}/${markNotif.mark.scale}`
+                        body: `Moyenne de la classe: ${markNotif.mark.average}/${markNotif.mark.scale}`
                     })
                 })
             }
