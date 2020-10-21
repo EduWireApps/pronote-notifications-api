@@ -37,7 +37,8 @@ class DatabaseService {
                         pronoteCAS: row.pronote_cas,
                         avatarBase64: row.avatar_base64,
                         fullName: row.full_name,
-                        studentClass: row.student_class
+                        studentClass: row.student_class,
+                        establishment: row.establishment
                     }
                 })
                 resolve()
@@ -134,12 +135,12 @@ class DatabaseService {
         })
     }
 
-    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass }) {
+    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass, establishment }) {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users
-                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class) VALUES
-                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}');
+                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment) VALUES
+                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}', '${establishment}');
             `).then(() => {
                 const user = {
                     pronoteUsername,
@@ -148,7 +149,8 @@ class DatabaseService {
                     pronoteCAS,
                     avatarBase64,
                     fullName,
-                    studentClass
+                    studentClass,
+                    establishment
                 }
                 this.users.push(user)
                 resolve(user)
@@ -156,12 +158,15 @@ class DatabaseService {
         })
     }
 
-    updateToken (token, { notificationsHomeworks, notificationsMarks }) {
+    updateToken (token, { notificationsHomeworks, notificationsMarks, isActive }) {
         return new Promise((resolve) => {
+            const updates = []
+            if (notificationsHomeworks) updates.push(`notifications_homeworks = ${notificationsHomeworks}`)
+            if (notificationsMarks) updates.push(`notifications_marks = ${notificationsMarks}`)
+            if (isActive) updates.push(`is_active = ${isActive}`)
             this.query(`
                 UPDATE users_tokens
-                SET notifications_homeworks = ${notificationsHomeworks},
-                notifications_marks = ${notificationsMarks}
+                SET ${updates.join(', ')}
                 WHERE fcm_token = '${token}';
             `).then(() => {
                 const tokenData = this.usersTokens.find((t) => t.fcmToken === token)

@@ -57,9 +57,42 @@ setInterval(() => {
     synchronize()
 }, 15 * 60 * 60 * 1000)
 
+app.post('/logout', async (req, res) => {
+    await initDB
+
+    console.log(req.headers)
+
+    const token = req.headers.authorization
+    const payload = jwt.verifyToken(token)
+    if (!token || !payload) {
+        return res.status(403).send({
+            success: false,
+            code: 2,
+            message: 'Unauthorized'
+        })
+    }
+
+    const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+    if (!existingToken) {
+        return res.status(500).send({
+            success: false,
+            code: 4,
+            message: 'Unknown FCM token'
+        })
+    }
+
+    database.updateToken(payload.fcmToken, {
+        isActive: false
+    })
+    return res.status(200).send({
+        success: true
+    })
+})
+
 app.post('/settings', async (req, res) => {
     await initDB
 
+    console.log(req.headers)
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -127,6 +160,7 @@ app.post('/login', async (req, res) => {
             avatar_base64: existingUser.avatarBase64,
             full_name: existingUser.fullName,
             student_class: existingUser.studentClass,
+            establishment: existingUser.establishment,
             notifications_homeworks: existingToken.notificationsHomeworks,
             notifications_marks: existingToken.notificationsMarks
         })
@@ -182,6 +216,7 @@ app.post('/register', async (req, res) => {
                 avatar_base64: existingUser.avatarBase64,
                 full_name: existingUser.fullName,
                 student_class: existingUser.studentClass,
+                establishment: existingUser.establishment,
                 notifications_homeworks: true,
                 notifications_marks: true,
                 jwt: token
@@ -195,6 +230,7 @@ app.post('/register', async (req, res) => {
                         avatar_base64: imageBuffer,
                         full_name: session.user.name,
                         student_class: session.user.studentClass.name,
+                        establishment: session.user.establishment.name,
                         notifications_homeworks: true,
                         notifications_marks: true,
                         jwt: token
@@ -204,7 +240,8 @@ app.post('/register', async (req, res) => {
                         ...{
                             avatarBase64: imageBuffer,
                             fullName: session.user.name,
-                            studentClass: session.user.studentClass.name
+                            studentClass: session.user.studentClass.name,
+                            establishment: session.user.establishment.name
                         }
                     })
                     pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
