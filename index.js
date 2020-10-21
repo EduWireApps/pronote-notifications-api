@@ -1,3 +1,7 @@
+// TO-DO
+
+// detect fcm token change on client side
+
 const config = require('./config.json')
 const fetch = require('node-fetch')
 
@@ -12,6 +16,7 @@ app.listen(config.port, () => console.log(`Pronote Notifications API server list
 const DatabaseService = require('./services/database')
 const PronoteService = require('./services/pronote')
 const FirebaseService = require('./services/firebase')
+const jwt = require('./services/jwt')
 
 const database = new DatabaseService()
 const pronote = new PronoteService()
@@ -24,16 +29,16 @@ const synchronize = () => {
         })
         pronote.checkSession(userAuth, oldCache).then(([notifications, newCache]) => {
             if (notifications.length > 0) {
-                const tokens = database.usersTokens.find((token) => {
-                    return token.pronoteUsername === userAuth.pronoteUsername && token.pronoteURL === userAuth.pronoteUsername && token.isActive
+                const tokens = database.usersTokens.filter((token) => {
+                    return token.pronoteUsername === userAuth.pronoteUsername && token.pronoteURL === userAuth.pronoteURL && token.isActive
                 })
                 const homeworksTokens = tokens.filter((token) => token.notificationsHomeworks).map((token) => token.fcmToken)
                 const marksTokens = tokens.filter((token) => token.notificationsMarks).map((token) => token.fcmToken)
                 notifications.forEach((notificationData) => {
                     const notification = firebase.buildNotification(notificationData)
-                    if (notification.type === 'homework') {
+                    if (notificationData.type === 'homework') {
                         firebase.sendNotification(notification, homeworksTokens)
-                    } else if (notification.type === 'mark') {
+                    } else if (notificationData.type === 'mark') {
                         firebase.sendNotification(notification, marksTokens)
                     }
                 })
@@ -49,19 +54,53 @@ setInterval(() => {
     synchronize()
 }, 15 * 60 * 60 * 1000)
 
+app.post('/settings', async (req, res) => {
+    await initDB
+
+    const token = req.headers.authorization
+    const payload = jwt.verifyToken(token)
+    if (!token || !payload) {
+        return res.status(403).send({
+            success: false,
+            code: 2,
+            message: 'Unauthorized'
+        })
+    }
+    const data = req.body
+
+    const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+    if (!existingToken) {
+        return res.status(500).send({
+            success: false,
+            code: 4,
+            message: 'Unknown FCM token'
+        })
+    }
+
+    database.updateToken(payload.fcmToken, {
+        notificationsHomeworks: data.notifications_homeworks,
+        notificationsMarks: data.notifications_marks
+    })
+    return res.status(200).send({
+        success: true
+    })
+})
+
 app.post('/login', async (req, res) => {
     await initDB
 
-    const body = req.body
-    const userAuth = {
-        pronoteUsername: body.pronote_username,
-        pronotePassword: body.pronote_password,
-        pronoteURL: body.pronote_url,
-        fcmToken: body.fcm_token
+    const token = req.headers.authorization
+    const payload = jwt.verifyToken(token)
+    if (!token || !payload) {
+        return res.status(403).send({
+            success: false,
+            code: 2,
+            message: 'Unauthorized'
+        })
     }
 
     const existingUser = database.users.find((user) => {
-        return user.pronoteUsername === userAuth.pronoteUsername && user.pronotePassword === userAuth.pronotePassword
+        return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
     })
 
     if (!existingUser) {
@@ -71,11 +110,22 @@ app.post('/login', async (req, res) => {
             message: 'Votre compte est introuvable.'
         })
     } else {
+        const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+        if (!existingToken) {
+            return res.status(500).send({
+                success: false,
+                code: 4,
+                message: 'Unknown FCM token'
+            })
+        }
+
         return res.status(200).send({
             success: true,
             avatar_base64: existingUser.avatarBase64,
             full_name: existingUser.fullName,
-            student_class: existingUser.studentClass
+            student_class: existingUser.studentClass,
+            notifications_homeworks: existingToken.notificationsHomeworks,
+            notifications_marks: existingToken.notificationsMarks
         })
     }
 })
@@ -88,12 +138,8 @@ app.post('/register', async (req, res) => {
         pronoteUsername: body.pronote_username,
         pronotePassword: body.pronote_password,
         pronoteURL: body.pronote_url,
-        FCMToken: body.fcm_token
+        fcmToken: body.fcm_token
     }
-
-    // sera remplacé par un resolveCas
-    const cas = 'ac-toulouse'
-    userAuth.pronoteCAS = cas
 
     if (Object.values(userAuth).some((v) => v === undefined)) {
         return res.status(400).send({
@@ -102,7 +148,9 @@ app.post('/register', async (req, res) => {
         })
     }
 
-    const isValidToken = await firebase.verifyToken(userAuth.FCMToken)
+    const token = jwt.createToken(userAuth)
+
+    const isValidToken = await firebase.verifyToken(userAuth.fcmToken)
     if (!isValidToken) {
         return res.status(403).send({
             success: false,
@@ -113,6 +161,9 @@ app.post('/register', async (req, res) => {
     const existingUser = database.users.find((user) => {
         return user.pronoteUsername === userAuth.pronoteUsername && user.pronoteURL === userAuth.pronoteURL
     })
+
+    const cas = await pronote.resolveCas(userAuth)
+    userAuth.pronoteCAS = cas
 
     pronote.createSession(userAuth).then((session) => {
         if (existingUser) {
@@ -125,9 +176,12 @@ app.post('/register', async (req, res) => {
             }
             res.status(200).send({
                 success: true,
-                avatarBase64: existingUser.avatarBase64,
-                fullName: existingUser.fullName,
-                studentClass: existingUser.studentClass
+                avatar_base64: existingUser.avatarBase64,
+                full_name: existingUser.fullName,
+                student_class: existingUser.studentClass,
+                notifications_homeworks: true,
+                notifications_marks: true,
+                jwt: token
             })
         } else {
             fetch(session.user.avatar).then((result) => {
@@ -135,9 +189,12 @@ app.post('/register', async (req, res) => {
                     const imageBuffer = Buffer.from(buffer).toString('base64')
                     res.status(200).send({
                         success: true,
-                        avatarBase64: imageBuffer,
-                        fullName: session.user.name,
-                        studentClass: session.user.studentClass.name
+                        avatar_base64: imageBuffer,
+                        full_name: session.user.name,
+                        student_class: session.user.studentClass.name,
+                        notifications_homeworks: true,
+                        notifications_marks: true,
+                        jwt: token
                     })
                     database.createUser({
                         ...userAuth,
@@ -147,13 +204,13 @@ app.post('/register', async (req, res) => {
                             studentClass: session.user.studentClass.name
                         }
                     })
-                    database.createToken(userAuth, userAuth.FCMToken)
                     pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
                         database.updateUserCache(userAuth, cache)
                     })
                 })
             })
         }
+        database.createOrUpdateToken(userAuth, userAuth.fcmToken)
     }).catch((error) => {
         let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'
         if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'

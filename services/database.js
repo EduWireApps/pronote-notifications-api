@@ -68,7 +68,7 @@ class DatabaseService {
             this.query(`
                 SELECT * FROM users_tokens
             `).then((rows) => {
-                this.devices = rows.map((row) => {
+                this.usersTokens = rows.map((row) => {
                     return {
                         pronoteURL: row.pronote_url,
                         pronoteUsername: row.pronote_username,
@@ -156,12 +156,41 @@ class DatabaseService {
         })
     }
 
-    createToken ({ pronoteUsername, pronoteURL }, token) {
+    updateToken (token, { notificationsHomeworks, notificationsMarks }) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE users_tokens
+                SET notifications_homeworks = ${notificationsHomeworks},
+                notifications_marks = ${notificationsMarks}
+                WHERE fcm_token = '${token}';
+            `).then(() => {
+                const tokenData = this.usersTokens.find((t) => t.fcmToken === token)
+                this.usersTokens = this.usersTokens.filter((t) => t.fcmToken !== token)
+                const updatedTokenData = {
+                    ...tokenData,
+                    ...{
+                        notificationsHomeworks,
+                        notificationsMarks
+                    }
+                }
+                this.usersTokens.push(updatedTokenData)
+                resolve(updatedTokenData)
+            })
+        })
+    }
+
+    createOrUpdateToken ({ pronoteUsername, pronoteURL }, token) {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users_tokens
                 (pronote_username, pronote_url, fcm_token, is_active, notifications_homeworks, notifications_marks) VALUES
-                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, true);
+                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, true)
+                ON CONFLICT ON CONSTRAINT users_tokens_pkey DO
+                    UPDATE SET pronote_username = excluded.pronote_username,
+                    pronote_url = excluded.pronote_url,
+                    is_active = true,
+                    notifications_homeworks = true,
+                    notifications_marks = true;
             `).then(() => {
                 const userToken = {
                     pronoteUsername,

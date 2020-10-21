@@ -1,7 +1,28 @@
+const Collection = require('@discordjs/collection')
 const pronote = require('pronote-api')
 const DATE_END_OF_YEAR = new Date(Date.now() + 31536000000)
 
 class PronoteService {
+    constructor () {
+        this.casCache = new Collection()
+    }
+
+    async resolveCas ({ pronoteUsername, pronotePassword, pronoteURL }) {
+        if (this.casCache.has(pronoteURL)) {
+            return this.casCache.get(pronoteURL)
+        } else {
+            const possiblesCas = await pronote.getCAS(pronoteURL)
+            if (possiblesCas.length === 1) {
+                return possiblesCas[0]
+            } else {
+                const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
+                const results = await Promise.all(promises)
+                const cas = possiblesCas[results.findIndex((r) => r !== undefined)]
+                return cas
+            }
+        }
+    }
+
     async checkSession (userAuth, oldCache = {}) {
         const notifications = []
         let newCache = oldCache
@@ -30,10 +51,10 @@ class PronoteService {
         }
 
         const marks = await session.marks('trimester')
-        if (oldCache.marks) {
+        if (oldCache.marksCache) {
             const marksNotifications = []
             marks.subjects.forEach((subject) => {
-                const cachedSubject = oldCache.marks.subjects.find((sub) => sub.name === subject.name)
+                const cachedSubject = oldCache.marksCache.subjects.find((sub) => sub.name === subject.name)
                 if (cachedSubject) {
                     const newMarks = subject.marks.filter((mark) => !(cachedSubject.marks.some((cacheMark) => cacheMark.id === mark.id)))
                     newMarks.forEach((mark) => marksNotifications.push({ subject, mark }))

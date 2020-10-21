@@ -35,7 +35,7 @@ class FirebaseService {
             delayWhileIdle: true,
             timeToLive: 3,
             restrictedPackageName: 'com.androz2091.pronotenotifications',
-            dryRun: true,
+            dryRun: false,
             data: {
                 key1: 'message1',
                 key2: 'message2'
@@ -49,14 +49,13 @@ class FirebaseService {
     }
 
     sendNotification (message, tokens) {
+        console.log(message, tokens)
         this.sender.send(message, {
             registrationTokens: tokens
         }, (error, response) => {
             console.log(response)
             if (error) console.error(error)
             else {
-                const failedTokens = tokens.filter((token, i) => response[i].error != null)
-                console.log(failedTokens)
             }
         })
     }
