@@ -5,6 +5,7 @@
   "author": "Androz2091 <androz2091@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@discordjs/collection": "^0.1.6",
     "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
     "jsonwebtoken": "^8.5.1",
