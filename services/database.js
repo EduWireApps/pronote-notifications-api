@@ -161,9 +161,9 @@ class DatabaseService {
     updateToken (token, { notificationsHomeworks, notificationsMarks, isActive }) {
         return new Promise((resolve) => {
             const updates = []
-            if (notificationsHomeworks) updates.push(`notifications_homeworks = ${notificationsHomeworks}`)
-            if (notificationsMarks) updates.push(`notifications_marks = ${notificationsMarks}`)
-            if (isActive) updates.push(`is_active = ${isActive}`)
+            if (Object.prototype.hasOwnProperty.call(notificationsHomeworks)) updates.push(`notifications_homeworks = ${notificationsHomeworks}`)
+            if (Object.prototype.hasOwnProperty.call(notificationsMarks)) updates.push(`notifications_marks = ${notificationsMarks}`)
+            if (Object.prototype.hasOwnProperty.call(isActive)) updates.push(`is_active = ${isActive}`)
             this.query(`
                 UPDATE users_tokens
                 SET ${updates.join(', ')}
