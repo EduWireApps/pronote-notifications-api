@@ -16,9 +16,9 @@ class PronoteService {
                 return {
                     cas: 'none'
                 }
-            } else if (possiblesCas.length === 1) {
+            } else if (typeof possiblesCas === 'string') {
                 return {
-                    cas: possiblesCas[0]
+                    cas: possiblesCas
                 }
             } else {
                 const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
