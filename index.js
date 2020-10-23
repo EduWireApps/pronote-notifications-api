@@ -119,7 +119,7 @@ app.post('/settings', async (req, res) => {
     })
 })
 
-app.post('/login', async (req, res) => {
+app.get('/login', async (req, res) => {
     await initDB
 
     const token = req.headers.authorization
