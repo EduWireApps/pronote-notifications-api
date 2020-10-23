@@ -29,11 +29,12 @@ class FirebaseService {
         })
     }
 
-    sendNotification (notification, tokens) {
+    sendNotification (notificationData, notificationType, tokens) {
         firebase.messaging().sendMulticast({
             data: {
+                type: notificationType
             },
-            notification,
+            notificationData,
             tokens
         }).then((response) => {
             console.log(response.responses.map((e) => e.error))

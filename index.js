@@ -40,9 +40,9 @@ const synchronize = () => {
                         body: notificationData.body
                     }
                     if (notificationData.type === 'homework') {
-                        firebase.sendNotification(notification, homeworksTokens)
+                        firebase.sendNotification(notification, 'homework', homeworksTokens)
                     } else if (notificationData.type === 'mark') {
-                        firebase.sendNotification(notification, marksTokens)
+                        firebase.sendNotification(notification, 'mark', marksTokens)
                     }
                 })
             }
@@ -199,64 +199,67 @@ app.post('/register', async (req, res) => {
         return user.pronoteUsername === userAuth.pronoteUsername && user.pronoteURL === userAuth.pronoteURL
     })
 
-    const cas = await pronote.resolveCas(userAuth)
+    const { cas, session } = await pronote.resolveCas(userAuth)
     userAuth.pronoteCAS = cas
 
-    pronote.createSession(userAuth).then((session) => {
-        if (existingUser) {
-            if (existingUser.pronotePassword !== userAuth.pronotePassword) {
-                database.updateUserPassword({
-                    pronoteUsername: userAuth.pronoteUsername,
-                    pronoteURL: userAuth.pronoteURL,
-                    newPassword: userAuth.pronotePassword
-                })
-            }
-            res.status(200).send({
-                success: true,
-                avatar_base64: existingUser.avatarBase64,
-                full_name: existingUser.fullName,
-                student_class: existingUser.studentClass,
-                establishment: existingUser.establishment,
-                notifications_homeworks: true,
-                notifications_marks: true,
-                jwt: token
-            })
-        } else {
-            fetch(session.user.avatar).then((result) => {
-                result.buffer().then((buffer) => {
-                    const imageBuffer = Buffer.from(buffer).toString('base64')
-                    res.status(200).send({
-                        success: true,
-                        avatar_base64: imageBuffer,
-                        full_name: session.user.name,
-                        student_class: session.user.studentClass.name,
-                        establishment: session.user.establishment.name,
-                        notifications_homeworks: true,
-                        notifications_marks: true,
-                        jwt: token
-                    })
-                    database.createUser({
-                        ...userAuth,
-                        ...{
-                            avatarBase64: imageBuffer,
-                            fullName: session.user.name,
-                            studentClass: session.user.studentClass.name,
-                            establishment: session.user.establishment.name
-                        }
-                    })
-                    pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
-                        database.updateUserCache(userAuth, cache)
-                    })
-                })
-            })
-        }
-        database.createOrUpdateToken(userAuth, userAuth.fcmToken)
-    }).catch((error) => {
+    const session = session || await pronote.createSession(userAuth).catch((error) => {
         let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'
         if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'
         res.status(403).send({
             success: false,
             message
         })
-    })
-})
+        return null;
+    });
+    
+    if (!session) return;
+
+    if (existingUser) {
+        if (existingUser.pronotePassword !== userAuth.pronotePassword) {
+            database.updateUserPassword({
+                pronoteUsername: userAuth.pronoteUsername,
+                pronoteURL: userAuth.pronoteURL,
+                newPassword: userAuth.pronotePassword
+            })
+        }
+        res.status(200).send({
+            success: true,
+            avatar_base64: existingUser.avatarBase64,
+            full_name: existingUser.fullName,
+            student_class: existingUser.studentClass,
+            establishment: existingUser.establishment,
+            notifications_homeworks: true,
+            notifications_marks: true,
+            jwt: token
+        })
+    } else {
+        fetch(session.user.avatar).then((result) => {
+            result.buffer().then((buffer) => {
+                const imageBuffer = Buffer.from(buffer).toString('base64')
+                res.status(200).send({
+                    success: true,
+                    avatar_base64: imageBuffer,
+                    full_name: session.user.name,
+                    student_class: session.user.studentClass.name,
+                    establishment: session.user.establishment.name,
+                    notifications_homeworks: true,
+                    notifications_marks: true,
+                    jwt: token
+                })
+                database.createUser({
+                    ...userAuth,
+                    ...{
+                        avatarBase64: imageBuffer,
+                        fullName: session.user.name,
+                        studentClass: session.user.studentClass.name,
+                        establishment: session.user.establishment.name
+                    }
+                })
+                pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
+                    database.updateUserCache(userAuth, cache)
+                })
+            })
+        })
+    }
+    database.createOrUpdateToken(userAuth, userAuth.fcmToken)
+});

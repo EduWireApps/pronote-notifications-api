@@ -12,13 +12,22 @@ class PronoteService {
             return this.casCache.get(pronoteURL)
         } else {
             const possiblesCas = await pronote.getCAS(pronoteURL)
-            if (possiblesCas.length === 1) {
-                return possiblesCas[0]
+            if (possiblesCas.length === 0) {
+                return {
+                    cas: 'none'
+                }
+            } else if (possiblesCas.length === 1) {
+                return {
+                    cas: possiblesCas[0]
+                }
             } else {
                 const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
                 const results = await Promise.all(promises)
                 const cas = possiblesCas[results.findIndex((r) => r !== undefined)]
-                return cas
+                return {
+                    cas,
+                    session: results.find((r) => r !== undefined)
+                }
             }
         }
     }
@@ -89,12 +98,17 @@ class PronoteService {
 
     createSession ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS }) {
         return new Promise((resolve, reject) => {
-            pronote.login(pronoteURL, pronoteUsername, pronotePassword, pronoteCAS || 'none', 'student').then((session) => {
-                resolve(session)
-            }).catch((error) => {
-                console.log(error)
-                reject(error)
-            })
+            try {
+                pronote.login(pronoteURL, pronoteUsername, pronotePassword, pronoteCAS || 'none', 'student').then((session) => {
+                    resolve(session)
+                }).catch((error) => {
+                    console.log(error)
+                    reject(error)
+                })
+            } catch {
+                // eslint-disable-next-line prefer-promise-reject-errors
+                reject()
+            }
         })
     }
 }
