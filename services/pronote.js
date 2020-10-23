@@ -11,7 +11,7 @@ class PronoteService {
         if (this.casCache.has(pronoteURL)) {
             return this.casCache.get(pronoteURL)
         } else {
-            const possiblesCas = await pronote.getCAS(pronoteURL)
+            const possiblesCas = await pronote.getCAS(pronoteURL).catch(() => {})
             if (!possiblesCas) {
                 return {
                     cas: 'none'

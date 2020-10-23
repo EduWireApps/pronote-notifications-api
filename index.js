@@ -197,7 +197,7 @@ app.post('/register', async (req, res) => {
 
     if (!session) {
         session = await pronote.createSession(userAuth).catch((error) => {
-            let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'
+            let message = 'Connexion à Pronote impossible. Votre URL Pronote est peut-être invalide. Cliquez sur "Q\'est-ce que "URL Pronote" pour plus d\'informations ou rejoignez notre serveur Discord : https://discord.gg/TwUUMqD pour plus d\'aide.'
             if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'
             res.status(403).send({
                 success: false,
