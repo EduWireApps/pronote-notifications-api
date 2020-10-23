@@ -34,7 +34,7 @@ class FirebaseService {
             data: {
                 type: notificationType
             },
-            notificationData,
+            notification: notificationData,
             tokens
         }).then((response) => {
             console.log(response.responses.map((e) => e.error))
