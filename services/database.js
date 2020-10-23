@@ -173,10 +173,7 @@ class DatabaseService {
                 this.usersTokens = this.usersTokens.filter((t) => t.fcmToken !== token)
                 const updatedTokenData = {
                     ...tokenData,
-                    ...{
-                        notificationsHomeworks,
-                        notificationsMarks
-                    }
+                    ...data
                 }
                 this.usersTokens.push(updatedTokenData)
                 resolve(updatedTokenData)
