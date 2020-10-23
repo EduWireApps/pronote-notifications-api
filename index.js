@@ -199,20 +199,22 @@ app.post('/register', async (req, res) => {
         return user.pronoteUsername === userAuth.pronoteUsername && user.pronoteURL === userAuth.pronoteURL
     })
 
-    const { cas, session } = await pronote.resolveCas(userAuth)
+    let { cas, session } = await pronote.resolveCas(userAuth)
     userAuth.pronoteCAS = cas
 
-    const session = session || await pronote.createSession(userAuth).catch((error) => {
-        let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'
-        if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'
-        res.status(403).send({
-            success: false,
-            message
+    if (!session) {
+        session = await pronote.createSession(userAuth).catch((error) => {
+            let message = 'Connexion à Pronote impossible. Veuillez vérifier vos identifiants et réessayez !'
+            if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'
+            res.status(403).send({
+                success: false,
+                message
+            })
+            return null
         })
-        return null;
-    });
-    
-    if (!session) return;
+    }
+
+    if (!session) return
 
     if (existingUser) {
         if (existingUser.pronotePassword !== userAuth.pronotePassword) {
@@ -262,4 +264,4 @@ app.post('/register', async (req, res) => {
         })
     }
     database.createOrUpdateToken(userAuth, userAuth.fcmToken)
-});
+})
