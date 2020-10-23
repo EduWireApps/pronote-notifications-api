@@ -1,7 +1,3 @@
-// TO-DO
-
-// detect fcm token change on client side
-
 const config = require('./config.json')
 const fetch = require('node-fetch')
 
