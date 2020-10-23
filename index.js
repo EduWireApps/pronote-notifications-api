@@ -60,8 +60,6 @@ setInterval(() => {
 app.post('/logout', async (req, res) => {
     await initDB
 
-    console.log(req.headers)
-
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -92,7 +90,6 @@ app.post('/logout', async (req, res) => {
 app.post('/settings', async (req, res) => {
     await initDB
 
-    console.log(req.headers)
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
