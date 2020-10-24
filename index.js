@@ -107,8 +107,8 @@ app.post('/settings', async (req, res) => {
     }
 
     database.updateToken(payload.fcmToken, {
-        notificationsHomeworks: data.notifications_homeworks,
-        notificationsMarks: data.notifications_marks
+        notificationsHomeworks: data.notifications_homeworks === 'true',
+        notificationsMarks: data.notifications_marks === 'true'
     })
     return res.status(200).send({
         success: true
