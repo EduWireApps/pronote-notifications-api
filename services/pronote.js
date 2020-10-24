@@ -7,6 +7,15 @@ class PronoteService {
         this.casCache = new Collection()
     }
 
+    parsePronoteURL (url) {
+        let newURL = url
+        if (url.endsWith('/eleve.html')) {
+            const position = url.indexOf('/eleve.html')
+            newURL = url.substring(0, position + 1)
+        }
+        return newURL
+    }
+
     async resolveCas ({ pronoteUsername, pronotePassword, pronoteURL }) {
         if (this.casCache.has(pronoteURL)) {
             return this.casCache.get(pronoteURL)
