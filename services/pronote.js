@@ -9,9 +9,9 @@ class PronoteService {
 
     parsePronoteURL (url) {
         let newURL = url
-        if (url.endsWith('/eleve.html')) {
-            const position = url.indexOf('/eleve.html')
-            newURL = url.substring(0, position + 1)
+        if (!url.endsWith('/pronote/') || !url.endsWith('/pronote')) {
+            const lastPosition = url.indexOf('/pronote/');
+            newURL = url.substring(0, lastPosition + '/pronote/'.length)
         }
         return newURL
     }
