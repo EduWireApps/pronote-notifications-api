@@ -10,7 +10,7 @@ class PronoteService {
     parsePronoteURL (url) {
         let newURL = url
         if (!url.endsWith('/pronote/') || !url.endsWith('/pronote')) {
-            const lastPosition = url.indexOf('/pronote/');
+            const lastPosition = url.indexOf('/pronote/')
             newURL = url.substring(0, lastPosition + '/pronote/'.length)
         }
         return newURL
@@ -54,7 +54,7 @@ class PronoteService {
             if (newHomeworks.length > 0 && newHomeworks.length <= 3) {
                 newHomeworks.forEach((work) => notifications.push({
                     type: 'homework',
-                    title: `Nouveau devoir en ${work.title}`,
+                    title: `Nouveau devoir en ${work.subject}`,
                     body: work.description
                 }))
             }
