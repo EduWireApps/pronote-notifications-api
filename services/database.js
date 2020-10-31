@@ -212,10 +212,11 @@ class DatabaseService {
     createNotification ({ pronoteUsername, pronoteURL }, { type, title, body }) {
         return new Promise((resolve) => {
             const id = Math.random().toString(36).substr(2, 9)
+            const createdAt = new Date().toISOString()
             this.query(`
                 INSERT INTO notifications
-                (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body) VALUES
-                ('${id}', '${pronoteUsername}', '${pronoteURL}', null, null, '${type}', '${title}', '${body}');
+                (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body, created_at) VALUES
+                ('${id}', '${pronoteUsername}', '${pronoteURL}', null, null, '${type}', '${title}', '${body}', '${createdAt}');
             `).then(() => {
                 const notificationData = {
                     id,
@@ -223,7 +224,8 @@ class DatabaseService {
                     pronoteURL,
                     type,
                     title,
-                    body
+                    body,
+                    createdAt
                 }
                 this.notifications.push(notificationData)
                 resolve(notificationData)
