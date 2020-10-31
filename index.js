@@ -54,10 +54,10 @@ const synchronize = () => {
 }
 
 const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens()])
-initDB.then(() => synchronize())
+//initDB.then(() => synchronize())
 setInterval(() => {
     synchronize()
-}, 15 * 60 * 60 * 1000)
+}, 30 * 60 * 60 * 1000)
 
 app.post('/logout', async (req, res) => {
     await initDB
