@@ -86,6 +86,28 @@ class DatabaseService {
         })
     }
 
+    fetchNotifications () {
+        return new Promise((resolve) => {
+            this.query(`
+                SELECT * FROM notifications
+            `).then((rows) => {
+                this.notifications = rows.map((row) => {
+                    return {
+                        pronoteURL: row.pronote_url,
+                        pronoteUsername: row.pronote_username,
+                        createdAt: row.created_at,
+                        readAt: row.read_at,
+                        sentAt: row.sent_at,
+                        body: row.body,
+                        title: row.title,
+                        type: row.type
+                    }
+                })
+                resolve()
+            })
+        })
+    }
+
     updateUserCache ({ pronoteUsername, pronoteURL }, { homeworksCache, marksCache }) {
         return new Promise((resolve) => {
             const homeworksCacheValue = quoteEscape(JSON.stringify(homeworksCache))

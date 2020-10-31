@@ -53,8 +53,8 @@ const synchronize = () => {
     })
 }
 
-const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens()])
-//initDB.then(() => synchronize())
+const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
+// initDB.then(() => synchronize())
 setInterval(() => {
     synchronize()
 }, 30 * 60 * 60 * 1000)
