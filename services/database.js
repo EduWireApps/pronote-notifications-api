@@ -216,7 +216,7 @@ class DatabaseService {
             this.query(`
                 INSERT INTO notifications
                 (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body, created_at) VALUES
-                ('${id}', '${pronoteUsername}', '${pronoteURL}', null, null, '${type}', '${title}', '${body}', '${createdAt}');
+                ('${id}', '${pronoteUsername}', '${pronoteURL}', null, null, '${type}', '${quoteEscape(title)}', '${quoteEscape(body)}', '${createdAt}');
             `).then(() => {
                 const notificationData = {
                     id,
