@@ -263,7 +263,7 @@ class DatabaseService {
                 WHERE notification_id = '${id}';
             `).then(() => {
                 const notificationData = this.notifications.find((n) => n.id === id)
-                this.notifications = this.usersTokens.filter((n) => n.id !== id)
+                this.notifications = this.notifications.filter((n) => n.id !== id)
                 const updatedNotificationData = {
                     ...notificationData,
                     ...{
