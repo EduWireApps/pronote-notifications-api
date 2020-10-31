@@ -31,15 +31,21 @@ const synchronize = () => {
                 const homeworksTokens = tokens.filter((token) => token.notificationsHomeworks).map((token) => token.fcmToken)
                 const marksTokens = tokens.filter((token) => token.notificationsMarks).map((token) => token.fcmToken)
                 notifications.forEach((notificationData) => {
-                    const notification = {
-                        title: notificationData.title,
-                        body: notificationData.body
-                    }
-                    if (notificationData.type === 'homework') {
-                        firebase.sendNotification(notification, 'homework', homeworksTokens)
-                    } else if (notificationData.type === 'mark') {
-                        firebase.sendNotification(notification, 'mark', marksTokens)
-                    }
+                    database.createNotification(userAuth, notificationData).then((notificationDataDB) => {
+                        const notification = {
+                            title: notificationData.title,
+                            body: notificationData.body
+                        }
+                        if (notificationData.type === 'homework') {
+                            firebase.sendNotification(notification, 'homework', homeworksTokens).then(() => {
+                                database.markNotificationSent(notificationDataDB.id, new Date())
+                            })
+                        } else if (notificationData.type === 'mark') {
+                            firebase.sendNotification(notification, 'mark', marksTokens).then(() => {
+                                database.markNotificationSent(notificationDataDB.id, new Date())
+                            })
+                        }
+                    })
                 })
             }
             database.updateUserCache(userAuth, newCache)
@@ -112,6 +118,39 @@ app.post('/settings', async (req, res) => {
     })
     return res.status(200).send({
         success: true
+    })
+})
+
+app.get('/notifications', async (req, res) => {
+    await initDB
+
+    const token = req.headers.authorization
+    const payload = jwt.verifyToken(token)
+    if (!token || !payload) {
+        return res.status(403).send({
+            success: false,
+            code: 2,
+            message: 'Unauthorized'
+        })
+    }
+
+    const existingUser = database.users.find((user) => {
+        return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
+    })
+
+    if (!existingUser) {
+        return res.status(403).send({
+            success: false,
+            code: 3,
+            message: 'Votre compte est introuvable.'
+        })
+    }
+
+    const notifications = database.notifications.filter((n) => n.pronoteUsername === existingUser.pronoteUsername && n.pronoteURL === existingUser.pronoteURL)
+
+    return res.status(200).send({
+        success: true,
+        notifications
     })
 })
 

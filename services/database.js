@@ -13,6 +13,7 @@ class DatabaseService {
         this.users = []
         this.usersCaches = []
         this.usersTokens = []
+        this.notifications = []
     }
 
     query (query) {
@@ -204,6 +205,70 @@ class DatabaseService {
                 }
                 this.usersTokens.push(userToken)
                 resolve(userToken)
+            })
+        })
+    }
+
+    createNotification ({ pronoteUsername, pronoteURL }, { type, title, body }) {
+        return new Promise((resolve) => {
+            const id = Math.random().toString(36).substr(2, 9)
+            this.query(`
+                INSERT INTO notifications
+                (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body) VALUES
+                ('${id}', '${pronoteUsername}', '${pronoteURL}', null, null, '${type}', '${title}', '${body}');
+            `).then(() => {
+                const notificationData = {
+                    id,
+                    pronoteUsername,
+                    pronoteURL,
+                    type,
+                    title,
+                    body
+                }
+                this.notifications.push(notificationData)
+                resolve(notificationData)
+            })
+        })
+    }
+
+    markNotificationSent (id, sentAt) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE notifications
+                SET sent_at = '${sentAt.toISOString()}'
+                WHERE notification_id = '${id}';
+            `).then(() => {
+                const notificationData = this.notifications.find((n) => n.id === id)
+                this.notifications = this.usersTokens.filter((n) => n.id !== id)
+                const updatedNotificationData = {
+                    ...notificationData,
+                    ...{
+                        sentAt
+                    }
+                }
+                this.notifications.push(updatedNotificationData)
+                resolve(updatedNotificationData)
+            })
+        })
+    }
+
+    markNotificationRead (id, readAt) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE notifications
+                SET read_at = '${readAt.toISOString()}'
+                WHERE notification_id = '${id}';
+            `).then(() => {
+                const notificationData = this.notifications.find((n) => n.id === id)
+                this.notifications = this.usersTokens.filter((n) => n.id !== id)
+                const updatedNotificationData = {
+                    ...notificationData,
+                    ...{
+                        readAt
+                    }
+                }
+                this.notifications.push(updatedNotificationData)
+                resolve(updatedNotificationData)
             })
         })
     }
