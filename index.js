@@ -300,3 +300,7 @@ app.post('/register', async (req, res) => {
     }
     database.createOrUpdateToken(userAuth, userAuth.fcmToken)
 })
+
+app.get('*', (req, res) => res.send({
+    success: true, message: 'Welcome to Notifications pour Pronote API'
+}))
