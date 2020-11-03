@@ -148,7 +148,7 @@ app.get('/notifications', async (req, res) => {
 
     const notifications = database.notifications
         .filter((n) => n.pronoteUsername === existingUser.pronoteUsername && n.pronoteURL === existingUser.pronoteURL)
-        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
     return res.status(200).send({
         success: true,
