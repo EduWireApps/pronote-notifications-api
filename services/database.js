@@ -247,7 +247,7 @@ class DatabaseService {
                     type,
                     title,
                     body,
-                    createdAt
+                    createdAt: new Date(createdAt)
                 }
                 this.notifications.push(notificationData)
                 resolve(notificationData)
