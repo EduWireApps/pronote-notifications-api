@@ -54,10 +54,10 @@ const synchronize = () => {
 }
 
 const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
-// initDB.then(() => synchronize())
-setInterval(() => {
-    synchronize()
-}, 30 * 60 * 60 * 1000)
+initDB.then(() => process.argv.includes('--sync') ? synchronize() : undefined);
+setInterval(function() {
+	synchronize()
+}, 30 * 60 * 1000)
 
 app.post('/logout', async (req, res) => {
     await initDB
