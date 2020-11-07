@@ -8,12 +8,13 @@ client.query(`
     (
         notification_id character varying COLLATE pg_catalog."default" NOT NULL,
         title character varying COLLATE pg_catalog."default" NOT NULL,
-        message character varying COLLATE pg_catalog."default" NOT NULL,
+        body character varying COLLATE pg_catalog."default" NOT NULL,
         read_at timestamp with time zone,
         sent_at timestamp with time zone,
         created_at timestamp with time zone NOT NULL,
         pronote_username character varying COLLATE pg_catalog."default" NOT NULL,
         pronote_url character varying COLLATE pg_catalog."default" NOT NULL,
+        type character varying COLLATE pg_catalog."default" NOT NULL,
         CONSTRAINT notifications_pkey PRIMARY KEY (notification_id)
     )
 
