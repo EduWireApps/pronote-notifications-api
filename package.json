@@ -8,9 +8,11 @@
     "@discordjs/collection": "^0.1.6",
     "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
+    "inquirer": "^7.3.3",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "pg": "^8.4.1",
-    "pronote-api": "Litarvan/pronote-api"
+    "pronote-api": "Litarvan/pronote-api",
+    "semver-parser": "^3.0.5"
   }
 }
