@@ -163,7 +163,7 @@ class DatabaseService {
             this.query(`
                 INSERT INTO users
                 (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment) VALUES
-                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}', '${establishment}');
+                ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}', '${establishment}', '${new Date().toISOString()}');
             `).then(() => {
                 const user = {
                     pronoteUsername,
