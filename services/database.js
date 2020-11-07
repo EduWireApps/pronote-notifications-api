@@ -109,6 +109,30 @@ class DatabaseService {
         })
     }
 
+    markLastActiveAt (token, date) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE users_tokens
+                SET last_active_at = '${date.toISOString()}'
+                WHERE fcm_token = '${token}';
+            `).then(() => {
+                resolve()
+            })
+        })
+    }
+
+    markLastSuccessAt (token, date) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE users_tokens
+                SET last_success_at = '${date.toISOString()}'
+                WHERE fcm_token = '${token}';
+            `).then(() => {
+                resolve()
+            })
+        })
+    }
+
     updateUserCache ({ pronoteUsername, pronoteURL }, { homeworksCache, marksCache }) {
         return new Promise((resolve) => {
             const homeworksCacheValue = quoteEscape(JSON.stringify(homeworksCache))

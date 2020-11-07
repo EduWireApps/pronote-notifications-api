@@ -36,13 +36,24 @@ const synchronize = () => {
                             title: notificationData.title,
                             body: notificationData.body
                         }
+                        const sentAt = new Date()
                         if (notificationData.type === 'homework') {
-                            firebase.sendNotification(notification, 'homework', homeworksTokens).then(() => {
+                            firebase.sendNotification(notification, 'homework', homeworksTokens).then((responses) => {
                                 database.markNotificationSent(notificationDataDB.id, new Date())
+                                responses.forEach((res, i) => {
+                                    const token = marksTokens[i]
+                                    database.markLastActiveAt(token, sentAt)
+                                    if (res.success) database.markLastSuccessAt(token, sentAt)
+                                })
                             })
                         } else if (notificationData.type === 'mark') {
-                            firebase.sendNotification(notification, 'mark', marksTokens).then(() => {
+                            firebase.sendNotification(notification, 'mark', marksTokens).then((responses) => {
                                 database.markNotificationSent(notificationDataDB.id, new Date())
+                                responses.forEach((res, i) => {
+                                    const token = marksTokens[i]
+                                    database.markLastActiveAt(token, sentAt)
+                                    if (res.success) database.markLastSuccessAt(token, sentAt)
+                                })
                             })
                         }
                     })
