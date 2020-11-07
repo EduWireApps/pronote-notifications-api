@@ -39,7 +39,8 @@ class DatabaseService {
                         avatarBase64: row.avatar_base64,
                         fullName: row.full_name,
                         studentClass: row.student_class,
-                        establishment: row.establishment
+                        establishment: row.establishment,
+                        passwordInvalidated: row.password_invalidated
                     }
                 })
                 resolve()
@@ -127,6 +128,31 @@ class DatabaseService {
                     pronoteURL,
                     homeworksCache,
                     marksCache
+                })
+                resolve()
+            })
+        })
+    }
+
+    invalidateUserPassword ({ pronoteUsername, pronoteURL }) {
+        return new Promise((resolve) => {
+            this.query(`
+                UPDATE users
+                SET password_invalidated = true
+                WHERE pronote_username = '${pronoteUsername}'
+                AND pronote_url = '${pronoteURL}';
+            `).then(() => {
+                const existingUser = this.users.find((user) => {
+                    return user.pronoteUsername === pronoteUsername && user.pronoteURL === pronoteURL
+                })
+                this.users = this.users.filter((user) => {
+                    return !(user.pronoteUsername === pronoteUsername && user.pronoteURL === pronoteURL)
+                })
+                this.users.push({
+                    ...existingUser,
+                    ...{
+                        passwordInvalidated: true
+                    }
                 })
                 resolve()
             })

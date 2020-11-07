@@ -19,7 +19,7 @@ const pronote = new PronoteService()
 const firebase = new FirebaseService()
 
 const synchronize = () => {
-    database.users.forEach((userAuth) => {
+    database.users.filter((user) => !user.passwordInvalidated).forEach((userAuth) => {
         const oldCache = database.usersCaches.find((cache) => {
             return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
         })
@@ -49,6 +49,10 @@ const synchronize = () => {
                 })
             }
             database.updateUserCache(userAuth, newCache)
+        }).catch((e) => {
+            if (e.message === 'Wrong user credentials') {
+                database.invalidateUserPassword(userAuth)
+            }
         })
     })
 }
