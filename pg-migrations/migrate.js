@@ -1,3 +1,4 @@
+const chalk = require('chalk')
 const config = require('../config.json')
 
 const { Pool } = require('pg')
@@ -31,10 +32,14 @@ const inquirer = require('inquirer');
 
     for (const version of needToBeAppliedVersions) {
         const migrationFile = require(`./${version}.js`)
-        migrationFile.run(pool)
+        await migrationFile.run(pool)
     }
 
     if (needToBeAppliedVersions.length > 0) {
-        fs.writeFileSync('./pg-migrations/.lastupdate', needToBeAppliedVersions.sort((a, b) => -(semver.compareSemVer(a, b, false)))[0], 'utf-8')
+        const newLastUpdate = needToBeAppliedVersions.sort((a, b) => -(semver.compareSemVer(a, b, false)))[0]
+        fs.writeFileSync('./pg-migrations/.lastupdate', newLastUpdate, 'utf-8')
+        console.log(`✓ Base de données mise à jour de la version ${chalk.yellow(lastUpdate)} à la version ${chalk.green(newLastUpdate)} !`)
+    } else {
+        console.log('✓ Aucune mise à jour disponible !')
     }
 })()

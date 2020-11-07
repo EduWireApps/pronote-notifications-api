@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@discordjs/collection": "^0.1.6",
+    "chalk": "^4.1.0",
     "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
     "inquirer": "^7.3.3",
