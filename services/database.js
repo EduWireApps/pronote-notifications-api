@@ -212,7 +212,7 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users
-                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment) VALUES
+                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment, created_at) VALUES
                 ('${pronoteUsername}', '${pronotePassword}', '${pronoteURL}', '${pronoteCAS}', '${avatarBase64}', '${fullName}', '${studentClass}', '${establishment}', '${new Date().toISOString()}');
             `).then(() => {
                 const user = {
