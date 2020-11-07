@@ -1,6 +1,5 @@
 const Collection = require('@discordjs/collection')
 const pronote = require('pronote-api')
-const DATE_END_OF_YEAR = new Date(Date.now() + 31536000000)
 
 class PronoteService {
     constructor () {
@@ -51,7 +50,7 @@ class PronoteService {
 
             this.createSession(userAuth).then((session) => {
                 // Vérification des devoirs
-                session.homeworks(Date.now(), DATE_END_OF_YEAR).then((homeworks) => {
+                session.homeworks(new Date(Date.now()), session.params.lastDay).then((homeworks) => {
                     if (oldCache.homeworksCache) {
                         const newHomeworks = homeworks.filter((work) => !(oldCache.homeworksCache.some((cacheWork) => cacheWork.description === work.description)))
                         if (newHomeworks.length > 0 && newHomeworks.length <= 3) {
