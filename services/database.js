@@ -115,10 +115,10 @@ class DatabaseService {
             const marksCacheValue = quoteEscape(JSON.stringify(marksCache))
             this.query(`
                 INSERT INTO users_caches
-                    (pronote_username, pronote_url, homeworks_cache, marks_cache) VALUES
-                    ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}')
+                    (pronote_username, pronote_url, homeworks_cache, marks_cache, last_update_at) VALUES
+                    ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}', '${new Date().toISOString()}')
                 ON CONFLICT ON CONSTRAINT users_caches_pkey DO
-                    UPDATE SET homeworks_cache = excluded.homeworks_cache, marks_cache = excluded.marks_cache;
+                    UPDATE SET homeworks_cache = excluded.homeworks_cache, marks_cache = excluded.marks_cache, last_update_at = excluded.last_update_at;
             `).then(() => {
                 this.usersCaches = this.usersCaches.filter((cache) => {
                     return !(cache.pronoteUsername === pronoteUsername && cache.pronoteURL === pronoteURL)
