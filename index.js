@@ -1,6 +1,12 @@
 const config = require('./config.json')
 const fetch = require('node-fetch')
 
+const Sentry = require('@sentry/node')
+Sentry.init({
+    dsn: config.sentryDSN,
+    tracesSampleRate: 1.0
+})
+
 // Start express server
 const morgan = require('morgan')
 const express = require('express')
