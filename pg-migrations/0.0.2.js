@@ -2,15 +2,15 @@ module.exports.run = (pool) => {
     return pool.query(`
     
         ALTER TABLE users
-        ADD password_invalidated boolean,
-        created_at timestamptz;
+        ADD COLUMN password_invalidated BOOLEAN,
+        ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
 
         ALTER TABLE users_caches
-        ADD last_update_at timestamptz;
+        ADD COLUMN last_update_at TIMESTAMP WITH TIME ZONE;
 
         ALTER TABLE users_tokens
-        ADD last_active_at timestamptx,
-        last_sent_at timestamptx;
+        ADD COLUMN last_success_at TIMESTAMP WITH TIME ZONE,
+        ADD COLUMN last_sent_at TIMESTAMP WITH TIME ZONE;
 
     `)
 }
