@@ -7,8 +7,9 @@ class PronoteService {
     }
 
     parsePronoteURL (url) {
+        console.log('Parsing URL ' + url)
         let newURL = url
-        if (!url.endsWith('/pronote/') || !url.endsWith('/pronote')) {
+        if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
             const lastPosition = url.indexOf('/pronote/')
             newURL = url.substring(0, lastPosition + '/pronote/'.length)
         }
