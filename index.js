@@ -280,6 +280,7 @@ app.post('/register', async (req, res) => {
                 newPassword: userAuth.pronotePassword
             })
         }
+        database.invalidateUserPassword(userAuth, false)
         res.status(200).send({
             success: true,
             avatar_base64: existingUser.avatarBase64,
