@@ -85,7 +85,7 @@ class PronoteService {
                                     notifications.push({
                                         type: 'mark',
                                         title: `Nouvelle note en ${markNotif.subject.name}`,
-                                        body: `Note: ${markNotif.mark.value}/${markNotif.mark.scale}\nMoyenne de la classe: ${markNotif.mark.average}/${markNotif.mark.scale}`
+                                        body: `${markNotif.mark.value ? `Note: ${markNotif.mark.value}/${markNotif.mark.scale}\n` : ''}Moyenne de la classe: ${markNotif.mark.average}/${markNotif.mark.scale}`
                                     })
                                 })
                             }
