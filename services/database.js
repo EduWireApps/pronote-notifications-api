@@ -158,11 +158,11 @@ class DatabaseService {
         })
     }
 
-    invalidateUserPassword ({ pronoteUsername, pronoteURL }) {
+    invalidateUserPassword ({ pronoteUsername, pronoteURL }, invalidate = true) {
         return new Promise((resolve) => {
             this.query(`
                 UPDATE users
-                SET password_invalidated = true
+                SET password_invalidated = ${invalidate}
                 WHERE pronote_username = '${pronoteUsername}'
                 AND pronote_url = '${pronoteURL}';
             `).then(() => {
@@ -175,7 +175,7 @@ class DatabaseService {
                 this.users.push({
                     ...existingUser,
                     ...{
-                        passwordInvalidated: true
+                        passwordInvalidated: invalidate
                     }
                 })
                 resolve()
