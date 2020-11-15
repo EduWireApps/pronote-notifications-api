@@ -279,7 +279,7 @@ app.post('/register', async (req, res) => {
 
     if (!session) {
         session = await pronote.createSession(userAuth).catch((error) => {
-            let message = 'Connexion à Pronote impossible. Votre URL Pronote est peut-être invalide. Fermer la pop-up et cliquez sur "Q\'est-ce que "URL Pronote" pour plus d\'informations ou rejoignez notre serveur Discord : https://discord.gg/TwUUMqD pour plus d\'aide.'
+            let message = 'Connexion à Pronote impossible car l\'URL Pronote entrée est invalide. Fermez la pop-up et cliquez sur "Q\'est-ce que "URL Pronote" ou rejoignez notre serveur Discord : https://discord.gg/TwUUMqD pour plus d\'informations. Tous les lycées et collèges étant supportés, nous vous aiderons à trouver la bonne URL.'
             if (error.code === 3) message = 'Connexion à Pronote réussie mais vos identifiants sont incorrects. Vérifiez et réessayez !'
             if (error.code === 2) message = 'Le serveur de Notifications pour Pronote est actuellement indisponible. Réessayez dans quelques minutes !'
             res.status(403).send({
