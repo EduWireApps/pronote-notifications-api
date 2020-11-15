@@ -74,11 +74,31 @@ const synchronize = () => {
     })
 }
 
+const checkInvalidated = () => {
+    const usersInvalidated = database.users.filter((u) => u.passwordInvalidated)
+    const failed = []
+    usersInvalidated.forEach((user) => {
+        if (failed.filter((e) => e === user.pronoteURL).length < 1) {
+            pronote.createSession(user).then(() => {
+                database.invalidateUserPassword(user, false)
+            }).catch(() => {
+                failed.push(user.pronoteURL)
+            })
+        }
+    })
+}
+
 const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
-initDB.then(() => process.argv.includes('--sync') ? synchronize() : undefined);
-setInterval(function() {
-	synchronize()
+initDB.then(() => {
+    if (process.argv.includes('--sync')) synchronize()
+    if (process.argv.includes('--checkinv')) checkInvalidated()
+})
+setInterval(function () {
+    synchronize()
 }, 30 * 60 * 1000)
+setInterval(() => {
+    checkInvalidated()
+}, 24 * 60 * 60 * 1000)
 
 app.post('/logout', async (req, res) => {
     await initDB
