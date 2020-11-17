@@ -114,7 +114,7 @@ app.post('/logout', async (req, res) => {
     }
     database.createLog(payload, {
         route: '/logout',
-        appVersion: req.headers['Content-Version'],
+        appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
     })
 
@@ -150,7 +150,7 @@ app.post('/settings', async (req, res) => {
     const data = req.body
     database.createLog(payload, {
         route: '/settings',
-        appVersion: req.headers['Content-Version'],
+        appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date(),
         body: data
     })
@@ -188,7 +188,7 @@ app.get('/notifications', async (req, res) => {
 
     database.createLog(payload, {
         route: '/notifications',
-        appVersion: req.headers['Content-Version'],
+        appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
     })
 
@@ -229,7 +229,7 @@ app.get('/login', async (req, res) => {
 
     database.createLog(payload, {
         route: '/login',
-        appVersion: req.headers['Content-Version'],
+        appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
     })
 
@@ -278,7 +278,7 @@ app.post('/register', async (req, res) => {
     }
     database.createLog(userAuth, {
         route: '/register',
-        appVersion: req.headers['Content-Version'],
+        appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date(),
         body: userAuth
     })
