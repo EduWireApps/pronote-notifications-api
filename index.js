@@ -112,6 +112,11 @@ app.post('/logout', async (req, res) => {
             message: 'Unauthorized'
         })
     }
+    database.createLog(payload, {
+        route: '/logout',
+        appVersion: req.headers['Content-Version'],
+        date: new Date()
+    })
 
     const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
     if (!existingToken) {
@@ -143,6 +148,12 @@ app.post('/settings', async (req, res) => {
         })
     }
     const data = req.body
+    database.createLog(payload, {
+        route: '/settings',
+        appVersion: req.headers['Content-Version'],
+        date: new Date(),
+        body: data
+    })
 
     const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
     if (!existingToken) {
@@ -174,6 +185,12 @@ app.get('/notifications', async (req, res) => {
             message: 'Unauthorized'
         })
     }
+
+    database.createLog(payload, {
+        route: '/notifications',
+        appVersion: req.headers['Content-Version'],
+        date: new Date()
+    })
 
     const existingUser = database.users.find((user) => {
         return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
@@ -209,6 +226,12 @@ app.get('/login', async (req, res) => {
             message: 'Unauthorized'
         })
     }
+
+    database.createLog(payload, {
+        route: '/login',
+        appVersion: req.headers['Content-Version'],
+        date: new Date()
+    })
 
     const existingUser = database.users.find((user) => {
         return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
@@ -250,8 +273,15 @@ app.post('/register', async (req, res) => {
         pronoteUsername: body.pronote_username,
         pronotePassword: body.pronote_password,
         pronoteURL: pronote.parsePronoteURL(body.pronote_url),
-        fcmToken: body.fcm_token
+        fcmToken: body.fcm_token,
+        deviceID: body.device_id
     }
+    database.createLog(userAuth, {
+        route: '/register',
+        appVersion: req.headers['Content-Version'],
+        date: new Date(),
+        body: userAuth
+    })
 
     if (Object.values(userAuth).some((v) => v === undefined)) {
         return res.status(400).send({
@@ -340,7 +370,7 @@ app.post('/register', async (req, res) => {
             })
         })
     }
-    database.createOrUpdateToken(userAuth, userAuth.fcmToken)
+    database.createOrUpdateToken(userAuth, userAuth.fcmToken, userAuth.deviceID)
 })
 
 app.get('*', (req, res) => res.send({

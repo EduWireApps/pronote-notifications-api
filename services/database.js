@@ -137,13 +137,19 @@ class DatabaseService {
         return new Promise((resolve) => {
             const homeworksCacheValue = quoteEscape(JSON.stringify(homeworksCache))
             const marksCacheValue = quoteEscape(JSON.stringify(marksCache))
+            const date = new Date().toISOString()
             this.query(`
                 INSERT INTO users_caches
                     (pronote_username, pronote_url, homeworks_cache, marks_cache, last_update_at) VALUES
-                    ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}', '${new Date().toISOString()}')
+                    ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}', '${date}')
                 ON CONFLICT ON CONSTRAINT users_caches_pkey DO
                     UPDATE SET homeworks_cache = excluded.homeworks_cache, marks_cache = excluded.marks_cache, last_update_at = excluded.last_update_at;
             `).then(() => {
+                this.query(`
+                    INSERT INTO users_caches_logs
+                        (pronote_username, pronote_url, homeworks_cache, marks_cache, date) VALUES
+                        ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}', '${date}');
+                `)
                 this.usersCaches = this.usersCaches.filter((cache) => {
                     return !(cache.pronoteUsername === pronoteUsername && cache.pronoteURL === pronoteURL)
                 })
@@ -254,16 +260,14 @@ class DatabaseService {
         })
     }
 
-    createOrUpdateToken ({ pronoteUsername, pronoteURL }, token) {
+    createOrUpdateToken ({ pronoteUsername, pronoteURL }, token, deviceID) {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users_tokens
-                (pronote_username, pronote_url, fcm_token, is_active, notifications_homeworks, notifications_marks) VALUES
-                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, true)
+                (pronote_username, pronote_url, fcm_token, is_active, notifications_homeworks, notifications_marks, device_id) VALUES
+                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, ${deviceID ? `'${deviceID}'` : 'null'})
                 ON CONFLICT ON CONSTRAINT users_tokens_pkey DO
-                    UPDATE SET pronote_username = excluded.pronote_username,
-                    pronote_url = excluded.pronote_url,
-                    is_active = true,
+                    UPDATE SET is_active = true,
                     notifications_homeworks = true,
                     notifications_marks = true;
             `).then(() => {
@@ -345,6 +349,14 @@ class DatabaseService {
                 resolve(updatedNotificationData)
             })
         })
+    }
+
+    createUserLog ({ pronoteUsername, pronoteURL, fcmToken }, { route, appVersion, date = new Date(), body, jwt }) {
+        return this.query(`
+            INSERT INTO users_logs
+            (pronote_username, pronote_url, fcm_token, route, app_version, date, jwt, req_body) VALUES
+            ('${pronoteURL}', '${pronoteURL}', '${fcmToken}', '${route}', '${appVersion}', '${date.toISOString()}', '${jwt}', ${body ? `'${JSON.stringify(body)}'` : 'null'});
+        `)
     }
 };
 
