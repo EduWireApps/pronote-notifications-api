@@ -112,7 +112,7 @@ app.post('/logout', async (req, res) => {
             message: 'Unauthorized'
         })
     }
-    database.createLog(payload, {
+    database.createUserLog(payload, {
         route: '/logout',
         appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
@@ -148,7 +148,7 @@ app.post('/settings', async (req, res) => {
         })
     }
     const data = req.body
-    database.createLog(payload, {
+    database.createUserLog(payload, {
         route: '/settings',
         appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date(),
@@ -186,7 +186,7 @@ app.get('/notifications', async (req, res) => {
         })
     }
 
-    database.createLog(payload, {
+    database.createUserLog(payload, {
         route: '/notifications',
         appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
@@ -227,7 +227,7 @@ app.get('/login', async (req, res) => {
         })
     }
 
-    database.createLog(payload, {
+    database.createUserLog(payload, {
         route: '/login',
         appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date()
@@ -276,7 +276,7 @@ app.post('/register', async (req, res) => {
         fcmToken: body.fcm_token,
         deviceID: body.device_id
     }
-    database.createLog(userAuth, {
+    database.createUserLog(userAuth, {
         route: '/register',
         appVersion: req.headers['Content-Version'] || 'unknown',
         date: new Date(),
