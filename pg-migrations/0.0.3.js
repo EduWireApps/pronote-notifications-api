@@ -11,7 +11,7 @@ module.exports.run = (pool) => {
             homeworks_cache json NOT NULL,
             marks_cache json NOT NULL,
             date timestamp with time zone NOT NULL
-        )
+        );
 
 
         CREATE TABLE public.users_logs
@@ -23,7 +23,7 @@ module.exports.run = (pool) => {
             app_version character varying COLLATE pg_catalog."default" NOT NULL,
             date timestamp with time zone NOT NULL,
             req_body json
-        )
+        );
 
     `)
 }
