@@ -265,7 +265,7 @@ class DatabaseService {
             this.query(`
                 INSERT INTO users_tokens
                 (pronote_username, pronote_url, fcm_token, is_active, notifications_homeworks, notifications_marks, device_id) VALUES
-                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, ${deviceID ? `'${deviceID}'` : 'null'})
+                ('${pronoteUsername}', '${pronoteURL}', '${token}', true, true, true, ${deviceID ? `'${deviceID}'` : 'null'})
                 ON CONFLICT ON CONSTRAINT users_tokens_pkey DO
                     UPDATE SET is_active = true,
                     notifications_homeworks = true,
