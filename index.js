@@ -273,15 +273,8 @@ app.post('/register', async (req, res) => {
         pronoteUsername: body.pronote_username,
         pronotePassword: body.pronote_password,
         pronoteURL: pronote.parsePronoteURL(body.pronote_url),
-        fcmToken: body.fcm_token,
-        deviceID: body.device_id
+        fcmToken: body.fcm_token
     }
-    database.createUserLog(userAuth, {
-        route: '/register',
-        appVersion: req.headers['Content-Version'] || 'unknown',
-        date: new Date(),
-        body: userAuth
-    })
 
     if (Object.values(userAuth).some((v) => v === undefined)) {
         return res.status(400).send({
@@ -289,6 +282,15 @@ app.post('/register', async (req, res) => {
             message: 'BAD REQUEST. Essayez de mettre à jour l\'application et réessayez !'
         })
     }
+
+    if (body.device_id) userAuth.deviceID = body.device_id
+
+    database.createUserLog(userAuth, {
+        route: '/register',
+        appVersion: req.headers['Content-Version'] || 'unknown',
+        date: new Date(),
+        body: userAuth
+    })
 
     const token = jwt.createToken(userAuth)
 
