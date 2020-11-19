@@ -1,3 +1,5 @@
+require('tls').DEFAULT_MIN_VERSION = 'TLSv1'
+
 const config = require('./config.json')
 const fetch = require('node-fetch')
 
