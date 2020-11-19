@@ -8,38 +8,40 @@ class PronoteService {
 
     parsePronoteURL (url) {
         console.log('Parsing URL ' + url)
-        let newURL = url
-/*        if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
+        const newURL = url
+        /*
+        if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
             const lastPosition = url.indexOf('/pronote/')
             newURL = url.substring(0, lastPosition + '/pronote/'.length)
-        }*/
-        console.log('Parsed URL '+newURL);
+        }
+        */
+        console.log('Parsed URL ' + newURL)
         return newURL
     }
 
     async resolveCas ({ pronoteUsername, pronotePassword, pronoteURL }) {
-        console.log('Resolving CAS '+pronoteURL);
+        console.log('Resolving CAS ' + pronoteURL)
         if (this.casCache.has(pronoteURL)) {
             return this.casCache.get(pronoteURL)
         } else {
             const possiblesCas = await pronote.getCAS(pronoteURL).catch(() => {})
-            console.log('Results from PAPI: '+possiblesCas);
-	    if (!possiblesCas) {
-		console.log('Final Result: none');
+            console.log('Results from PAPI: ' + possiblesCas)
+            if (!possiblesCas) {
+                console.log('Final Result: none')
                 return {
                     cas: 'none'
                 }
             } else if (typeof possiblesCas === 'string') {
-                console.log('Final Result: '+possiblesCas);
-		return {
+                console.log('Final Result: ' + possiblesCas)
+                return {
                     cas: possiblesCas
                 }
             } else {
                 const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
                 const results = await Promise.all(promises)
                 const cas = possiblesCas[results.findIndex((r) => r !== undefined)]
-                console.log('Final Result: '+cas);
-		return {
+                console.log('Final Result: ' + cas)
+                return {
                     cas,
                     session: results.find((r) => r !== undefined)
                 }
