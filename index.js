@@ -346,31 +346,39 @@ app.post('/register', async (req, res) => {
             jwt: token
         })
     } else {
-        fetch(session.user.avatar).then((result) => {
-            result.buffer().then((buffer) => {
-                const imageBuffer = Buffer.from(buffer).toString('base64')
-                res.status(200).send({
-                    success: true,
-                    avatar_base64: imageBuffer,
-                    full_name: session.user.name,
-                    student_class: session.user.studentClass.name,
-                    establishment: session.user.establishment.name,
-                    notifications_homeworks: true,
-                    notifications_marks: true,
-                    jwt: token
-                })
-                database.createUser({
-                    ...userAuth,
-                    ...{
-                        avatarBase64: imageBuffer,
-                        fullName: session.user.name,
-                        studentClass: session.user.studentClass.name,
-                        establishment: session.user.establishment.name
-                    }
-                })
-                pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
-                    database.updateUserCache(userAuth, cache)
-                })
+        const fetchAvatarPm = new Promise((resolve) => {
+            if (!session.user.avatar) resolve()
+            else {
+                fetch(session.user.avatar).then((result) => {
+                    result.buffer().then((buffer) => {
+                        const imageBuffer = Buffer.from(buffer).toString('base64')
+                        resolve(imageBuffer)
+                    })
+                }).catch(() => resolve())
+            }
+        })
+        fetchAvatarPm.then((imageBuffer) => {
+            res.status(200).send({
+                success: true,
+                avatar_base64: imageBuffer || '',
+                full_name: session.user.name,
+                student_class: session.user.studentClass.name,
+                establishment: session.user.establishment.name,
+                notifications_homeworks: true,
+                notifications_marks: true,
+                jwt: token
+            })
+            database.createUser({
+                ...userAuth,
+                ...{
+                    avatarBase64: imageBuffer || '',
+                    fullName: session.user.name,
+                    studentClass: session.user.studentClass.name,
+                    establishment: session.user.establishment.name
+                }
+            })
+            pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
+                database.updateUserCache(userAuth, cache)
             })
         })
     }
