@@ -355,7 +355,7 @@ class DatabaseService {
         return this.query(`
             INSERT INTO users_logs
             (pronote_username, pronote_url, fcm_token, route, app_version, date, jwt, req_body) VALUES
-            ('${pronoteURL}', '${pronoteURL}', '${fcmToken}', '${route}', '${appVersion}', '${date.toISOString()}', '${jwt}', ${body ? `'${JSON.stringify(body)}'` : 'null'});
+            ('${pronoteUsername}', '${pronoteURL}', '${fcmToken}', '${route}', '${appVersion}', '${date.toISOString()}', '${jwt}', ${body ? `'${JSON.stringify(body)}'` : 'null'});
         `)
     }
 };
