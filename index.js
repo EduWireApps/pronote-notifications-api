@@ -26,8 +26,8 @@ const database = new DatabaseService()
 const pronote = new PronoteService()
 const firebase = new FirebaseService()
 
-const synchronize = () => {
-    database.users.filter((user) => !user.passwordInvalidated).forEach((userAuth) => {
+const synchronize = (studentName) => {
+    database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true)).forEach((userAuth) => {
         const oldCache = database.usersCaches.find((cache) => {
             return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
         })
@@ -92,7 +92,7 @@ const checkInvalidated = () => {
 
 const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
 initDB.then(() => {
-    if (process.argv.includes('--sync')) synchronize()
+    if (process.argv.includes('--sync')) synchronize(process.argv[process.argv.indexOf('--sync')+1] === 'all' ? null : process.argv[process.argv.indexOf('--sync')+1])
     if (process.argv.includes('--checkinv')) checkInvalidated()
 })
 setInterval(function () {
