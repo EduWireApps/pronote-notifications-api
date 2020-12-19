@@ -1817,10 +1817,9 @@ process-nextick-args@~2.0.0:
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
   integrity sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==
 
-pronote-api@^2.3.0:
+pronote-api@Litarvan/pronote-api:
   version "2.3.0"
-  resolved "https://registry.yarnpkg.com/pronote-api/-/pronote-api-2.3.0.tgz#388a993b7a0232a12ae53934e1a47ffd77a1323d"
-  integrity sha512-CiONXO1fEEkdXhh/70B39O5x2W2RSW9fkgDT9yKuQ7wHw9ahr3E/wAObsWDar01/eQXD/bKccC8QkY/yYxQvig==
+  resolved "https://codeload.github.com/Litarvan/pronote-api/tar.gz/a7fdc22cd7ba824fcef06a766a8d7885bb870475"
   dependencies:
     axios "^0.21"
     body-parser "^1.19.0"

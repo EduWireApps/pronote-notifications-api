@@ -15,7 +15,7 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "pg": "^8.4.1",
-    "pronote-api": "^2.3.0",
+    "pronote-api": "Litarvan/pronote-api",
     "semver-parser": "^3.0.5"
   }
 }
