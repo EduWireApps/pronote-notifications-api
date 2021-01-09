@@ -131,16 +131,19 @@ class PronoteService {
                 pronote.login(pronoteURL, pronoteUsername, pronotePassword, pronoteCAS || 'none', 'student').then((session) => {
                     resolve(session)
                 }).catch((error) => {
+                    const formattedUserCredentials = `(${pronoteUsername}:${pronotePassword}@${pronoteURL}:${pronoteCAS})`;
                     if (error.code === 1) {
                         console.log(chalk.yellow(`#${fetchID} Connexion à Pronote : CAS est invalide pour ${pronoteUsername} (${pronoteCAS})`))
                     } else if (error.message === 'read ECONNRESET') {
                         console.log(chalk.red(`#${fetchID} Connexion à Pronote : serveur ${pronoteURL} inaccessible, connexion fermée`));
                     } else if (error.message === 'Wrong user credentials') {
-                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : mauvais identifiants (${pronoteUsername}:${pronotePassword}@${pronoteURL}:${pronoteCAS})`));
+                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : mauvais identifiants ${formattedUserCredentials}`));
                     } else if (error.message.startsWith('connect ETIMEDOUT')) {
                         console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : timeout lors de l\'authentification à ${pronoteURL}`));
                     } else if (error.message === 'You are being rate limited because of too many failed requests') {
                         console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : API de Pronote Notifications bannie suite à de nombreuses connexions invalides ${pronoteURL}`));
+                    } else if (error.message === 'Session has expired due to inactivity or error') {
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : La session a expiré lors de la connexion ${formattedUserCredentials}`));
                     } else {
                         console.log(chalk.red(`#${fetchID} ${error.message}`))
                     }
