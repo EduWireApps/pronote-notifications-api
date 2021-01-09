@@ -77,7 +77,9 @@ class PronoteService {
                     }
 
                     session.marks('trimester').then((marks) => {
-                        if (oldCache.marksCache) {
+                        if (!marks) {
+                            marks = { subjects: [], empty: true };
+                        } else if (oldCache.marksCache && !oldCache.marksCache.empty) {
                             const marksNotifications = []
                             marks.subjects.forEach((subject) => {
                                 const cachedSubject = oldCache.marksCache.subjects.find((sub) => sub.name === subject.name)
