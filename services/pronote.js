@@ -28,11 +28,13 @@ class PronoteService {
             console.log('Results from PAPI: ' + possiblesCas)
             if (!possiblesCas) {
                 console.log('Final Result: none')
+                this.casCache.set(pronoteURL, 'none');
                 return {
                     cas: 'none'
                 }
             } else if (typeof possiblesCas === 'string') {
                 console.log('Final Result: ' + possiblesCas)
+                this.casCache.set(pronoteURL, possiblesCas);
                 return {
                     cas: possiblesCas
                 }
@@ -40,6 +42,7 @@ class PronoteService {
                 const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
                 const results = await Promise.all(promises)
                 const cas = possiblesCas[results.findIndex((r) => r !== undefined)]
+                this.casCache.set(pronoteURL, cas);
                 console.log('Final Result: ' + cas)
                 return {
                     cas,
