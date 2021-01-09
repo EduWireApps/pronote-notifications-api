@@ -142,7 +142,7 @@ class PronoteService {
                     } else if (error.message === 'You are being rate limited because of too many failed requests') {
                         console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : API de Pronote Notifications bannie suite à de nombreuses connexions invalides ${pronoteURL}`));
                     } else {
-                        console.log(chalk.red(error.message))
+                        console.log(chalk.red(`#${fetchID} ${error.message}`))
                     }
                     reject(error)
                 })
