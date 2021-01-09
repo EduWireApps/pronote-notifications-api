@@ -26,12 +26,16 @@ const database = new DatabaseService()
 const pronote = new PronoteService()
 const firebase = new FirebaseService()
 
-const synchronize = (studentName) => {
-    database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true)).forEach((userAuth) => {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const synchronize = async (studentName) => {
+    const usersSync = database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true));
+    for (let [index, userAuth] of usersSync.entries()) {
+        await sleep(500);
         const oldCache = database.usersCaches.find((cache) => {
             return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
         })
-        pronote.checkSession(userAuth, oldCache).then(([notifications, newCache]) => {
+        pronote.checkSession(userAuth, oldCache, index).then(([notifications, newCache]) => {
             if (notifications.length > 0) {
                 const tokens = database.usersTokens.filter((token) => {
                     return token.pronoteUsername === userAuth.pronoteUsername && token.pronoteURL === userAuth.pronoteURL && token.isActive
@@ -73,7 +77,7 @@ const synchronize = (studentName) => {
                 database.invalidateUserPassword(userAuth)
             }
         })
-    })
+    }
 }
 
 const checkInvalidated = () => {
