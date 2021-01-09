@@ -1,4 +1,5 @@
 const Collection = require('@discordjs/collection')
+const chalk = require('chalk')
 const pronote = require('pronote-api')
 
 class PronoteService {
@@ -52,12 +53,12 @@ class PronoteService {
         }
     }
 
-    checkSession (userAuth, oldCache = {}) {
+    checkSession (userAuth, oldCache = {}, fetchID) {
         return new Promise((resolve, reject) => {
             const notifications = []
             let newCache = oldCache
 
-            this.createSession(userAuth).then((session) => {
+            this.createSession(userAuth, fetchID).then((session) => {
                 // Vérification des devoirs
                 session.homeworks(new Date(Date.now()), session.params.lastDay).then((homeworks) => {
                     if (oldCache.homeworksCache) {
@@ -124,13 +125,25 @@ class PronoteService {
         })
     }
 
-    createSession ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS }) {
+    createSession ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS }, fetchID) {
         return new Promise((resolve, reject) => {
             try {
                 pronote.login(pronoteURL, pronoteUsername, pronotePassword, pronoteCAS || 'none', 'student').then((session) => {
                     resolve(session)
                 }).catch((error) => {
-                    console.log(error)
+                    if (error.code === 1) {
+                        console.log(chalk.yellow(`#${fetchID} Connexion à Pronote : CAS est invalide pour ${pronoteUsername} (${pronoteCAS})`))
+                    } else if (error.message === 'read ECONNRESET') {
+                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : serveur ${pronoteURL} inaccessible, connexion fermée`));
+                    } else if (error.message === 'Wrong user credentials') {
+                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : mauvais identifiants (${pronoteUsername}:${pronotePassword}@${pronoteURL}:${pronoteCAS})`));
+                    } else if (error.message.startsWith('connect ETIMEDOUT')) {
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : timeout lors de l\'authentification à ${pronoteURL}`));
+                    } else if (error.message === 'You are being rate limited because of too many failed requests') {
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : API de Pronote Notifications bannie suite à de nombreuses connexions invalides ${pronoteURL}`));
+                    } else {
+                        console.log(chalk.red(error.message))
+                    }
                     reject(error)
                 })
             } catch {
