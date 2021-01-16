@@ -23,7 +23,9 @@ class PronoteService {
     async resolveCas ({ pronoteUsername, pronotePassword, pronoteURL }) {
         console.log('Resolving CAS ' + pronoteURL)
         if (this.casCache.has(pronoteURL)) {
-            return this.casCache.get(pronoteURL)
+            return {
+                cas: this.casCache.get(pronoteURL)
+            }
         } else {
             const possiblesCas = await pronote.getCAS(pronoteURL).catch(() => {})
             console.log('Results from PAPI: ' + possiblesCas)
