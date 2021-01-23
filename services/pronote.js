@@ -10,6 +10,11 @@ class PronoteService {
     parsePronoteURL (url) {
         console.log('Parsing URL ' + url)
         const newURL = url
+        const pronoteIndexEducationRegex = /https:\/\/([a-zA-Z0-9]{8})\.index-education\.net\/pronote\/?/;
+        if (newURL.includes('index-education.net') && pronoteIndexEducationRegex.test(newURL)) {
+            const [fullMatch, code] = newURL.match(pronoteIndexEducationRegex);
+            newURL = `https://${code}.index-education.net/pronote/`;
+        }
         /*
         if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
             const lastPosition = url.indexOf('/pronote/')
