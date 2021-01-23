@@ -22,7 +22,7 @@ class PronoteService {
 
     async resolveCas ({ pronoteUsername, pronotePassword, pronoteURL }) {
         console.log('Resolving CAS ' + pronoteURL)
-        if (this.casCache.has(pronoteURL)) {
+        if (this.casCache.has(pronoteURL) && this.casCache.get(pronoteURL) !== undefined) {
             return {
                 cas: this.casCache.get(pronoteURL)
             }
