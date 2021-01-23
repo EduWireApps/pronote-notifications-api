@@ -36,7 +36,6 @@ class PronoteService {
             console.log('Results from PAPI: ' + possiblesCas)
             if (!possiblesCas) {
                 console.log('Final Result: none')
-                this.casCache.set(pronoteURL, 'none');
                 return {
                     cas: 'none'
                 }
