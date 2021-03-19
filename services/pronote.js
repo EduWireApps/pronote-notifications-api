@@ -8,7 +8,7 @@ class PronoteService {
     }
 
     async getEstablishments (latitude, longitude) {
-        return pronote.geo(latitude, long);
+        return pronote.geo(latitude, longitude);
     }
 
     parsePronoteURL (url) {
