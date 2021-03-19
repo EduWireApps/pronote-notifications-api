@@ -271,6 +271,18 @@ app.get('/login', async (req, res) => {
     }
 })
 
+app.get('/establishments', async (req, res) => {
+
+    if (!req.query.latitude || !req.query.longitude) return;
+
+    const establishments = await pronote.getEstablishments(req.query.latitude, req.query.longitude);
+
+    return res.status(200).send({
+        success: true,
+        establishments
+    });
+});
+
 app.post('/register', async (req, res) => {
     await initDB
 

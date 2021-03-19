@@ -7,6 +7,10 @@ class PronoteService {
         this.casCache = new Collection()
     }
 
+    async getEstablishments (latitude, longitude) {
+        return pronote.geo(latitude, long);
+    }
+
     parsePronoteURL (url) {
         console.log('Parsing URL ' + url)
         let newURL = url
