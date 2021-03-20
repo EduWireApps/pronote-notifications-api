@@ -275,7 +275,11 @@ app.get('/establishments', async (req, res) => {
 
     if (!req.query.latitude || !req.query.longitude) return;
 
-    database.createUserLog(payload, {
+    database.createUserLog({
+        pronoteUsername: 'unknown',
+        pronoteURL: 'unknown',
+        fcmToken: 'unknown'
+    }, {
         route: '/establishments',
         appVersion: req.headers['App-Version'] || 'unknown',
         date: new Date(),
