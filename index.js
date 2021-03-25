@@ -120,7 +120,7 @@ app.post('/logout', async (req, res) => {
     }
     database.createUserLog(payload, {
         route: '/logout',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date()
     })
 
@@ -156,7 +156,7 @@ app.post('/settings', async (req, res) => {
     const data = req.body
     database.createUserLog(payload, {
         route: '/settings',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date(),
         body: data
     })
@@ -194,7 +194,7 @@ app.get('/notifications', async (req, res) => {
 
     database.createUserLog(payload, {
         route: '/notifications',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date()
     })
 
@@ -235,7 +235,7 @@ app.get('/login', async (req, res) => {
 
     database.createUserLog(payload, {
         route: '/login',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date()
     })
 
@@ -281,7 +281,7 @@ app.get('/establishments', async (req, res) => {
         fcmToken: 'unknown'
     }, {
         route: '/establishments',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date(),
         body: { latitude: req.query.latitude, longitude: req.query.longitude }
     })
@@ -316,7 +316,7 @@ app.post('/register', async (req, res) => {
 
     database.createUserLog(userAuth, {
         route: '/register',
-        appVersion: req.headers['App-Version'] || 'unknown',
+        appVersion: req.headers['app-version'] || 'unknown',
         date: new Date(),
         body: userAuth
     })
