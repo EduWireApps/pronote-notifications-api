@@ -26,12 +26,12 @@ const database = new DatabaseService()
 const pronote = new PronoteService()
 const firebase = new FirebaseService()
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const synchronize = async (studentName) => {
-    const usersSync = database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true));
-    for (let [index, userAuth] of usersSync.entries()) {
-        await sleep(500);
+    const usersSync = database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true))
+    for (const [index, userAuth] of usersSync.entries()) {
+        await sleep(500)
         const oldCache = database.usersCaches.find((cache) => {
             return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
         })
@@ -96,7 +96,7 @@ const checkInvalidated = () => {
 
 const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
 initDB.then(() => {
-    if (process.argv.includes('--sync')) synchronize(process.argv[process.argv.indexOf('--sync')+1] === 'all' ? null : process.argv[process.argv.indexOf('--sync')+1])
+    if (process.argv.includes('--sync')) synchronize(process.argv[process.argv.indexOf('--sync') + 1] === 'all' ? null : process.argv[process.argv.indexOf('--sync') + 1])
     if (process.argv.includes('--checkinv')) checkInvalidated()
 })
 setInterval(function () {
@@ -123,6 +123,12 @@ app.post('/logout', async (req, res) => {
         appVersion: req.headers['app-version'] || 'unknown',
         date: new Date()
     })
+
+    if (payload.pronoteURL === 'demo') {
+        return res.status(200).send({
+            success: true
+        })
+    }
 
     const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
     if (!existingToken) {
@@ -161,6 +167,12 @@ app.post('/settings', async (req, res) => {
         body: data
     })
 
+    if (payload.pronoteURL === 'demo') {
+        return res.status(200).send({
+            success: true
+        })
+    }
+
     const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
     if (!existingToken) {
         return res.status(500).send({
@@ -197,6 +209,26 @@ app.get('/notifications', async (req, res) => {
         appVersion: req.headers['app-version'] || 'unknown',
         date: new Date()
     })
+
+    if (payload.pronoteURL === 'demo') {
+        const minDate = new Date(2012, 0, 1)
+        const randomDate = () => new Date(minDate.getTime() + Math.random() * (Date.now() - minDate.getTime()))
+        return res.status(200).send({
+            success: true,
+            notifications: [
+                {
+                    pronoteURL: 'demo',
+                    pronoteUsername: 'demo',
+                    createdAt: randomDate(),
+                    readAt: randomDate(),
+                    sentAt: randomDate(),
+                    body: 'Nouvelle note en HISTOIRE-GEOGRAPHIE',
+                    title: 'Note: 19/20\nMoyenne de la classe: 11.91/20',
+                    type: 'mark'
+                }
+            ]
+        })
+    }
 
     const existingUser = database.users.find((user) => {
         return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
@@ -239,6 +271,18 @@ app.get('/login', async (req, res) => {
         date: new Date()
     })
 
+    if (payload.pronoteURL === 'demo') {
+        return res.status(200).send({
+            success: true,
+            avatar_base64: null,
+            full_name: 'Sarah Kelly',
+            student_class: '204',
+            establishment: 'Lycée Gustave Eiffel',
+            notifications_homeworks: true,
+            notifications_marks: true
+        })
+    }
+
     const existingUser = database.users.find((user) => {
         return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
     })
@@ -272,8 +316,7 @@ app.get('/login', async (req, res) => {
 })
 
 app.get('/establishments', async (req, res) => {
-
-    if (!req.query.latitude || !req.query.longitude) return;
+    if (!req.query.latitude || !req.query.longitude) return
 
     database.createUserLog({
         pronoteUsername: 'unknown',
@@ -286,13 +329,13 @@ app.get('/establishments', async (req, res) => {
         body: { latitude: req.query.latitude, longitude: req.query.longitude }
     })
 
-    const establishments = await pronote.getEstablishments(req.query.latitude, req.query.longitude);
+    const establishments = await pronote.getEstablishments(req.query.latitude, req.query.longitude)
 
     return res.status(200).send({
         success: true,
         establishments
-    });
-});
+    })
+})
 
 app.post('/register', async (req, res) => {
     await initDB
@@ -328,6 +371,19 @@ app.post('/register', async (req, res) => {
         return res.status(403).send({
             success: false,
             message: 'Impossible de valider le token FCM.'
+        })
+    }
+
+    if (userAuth.pronoteURL === 'demo') {
+        return res.status(200).send({
+            success: true,
+            avatar_base64: null,
+            full_name: 'Sarah Kelly',
+            student_class: '204',
+            establishment: 'Lycée Gustave Eiffel',
+            notifications_homeworks: true,
+            notifications_marks: true,
+            jwt: token
         })
     }
 
