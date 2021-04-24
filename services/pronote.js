@@ -8,16 +8,16 @@ class PronoteService {
     }
 
     async getEstablishments (latitude, longitude) {
-        return pronote.geo(latitude, longitude);
+        return pronote.geo(latitude, longitude)
     }
 
     parsePronoteURL (url) {
         console.log('Parsing URL ' + url)
         let newURL = url
-        const pronoteIndexEducationRegex = /([a-zA-Z0-9]{8})\.index-education\.net/;
+        const pronoteIndexEducationRegex = /([a-zA-Z0-9]{8})\.index-education\.net/
         if (newURL.includes('index-education.net') && pronoteIndexEducationRegex.test(newURL)) {
-            const [fullMatch, code] = newURL.match(pronoteIndexEducationRegex);
-            newURL = `https://${code}.index-education.net/pronote/`;
+            const [fullMatch, code] = newURL.match(pronoteIndexEducationRegex)
+            newURL = `https://${code}.index-education.net/pronote/`
         }
         /*
         if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
@@ -45,23 +45,23 @@ class PronoteService {
                 }
             } else if (typeof possiblesCas === 'string') {
                 console.log('Final Result: ' + possiblesCas)
-                this.casCache.set(pronoteURL, possiblesCas);
+                this.casCache.set(pronoteURL, possiblesCas)
                 return {
                     cas: possiblesCas
                 }
             } else {
-                let cas = null;
-                let results = null;
+                let cas = null
+                let results = null
                 const fetchCas = async () => {
                     const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
                     results = await Promise.all(promises)
                     return possiblesCas[results.findIndex((r) => r !== undefined)]
                 }
-                cas = await fetchCas();
+                cas = await fetchCas()
                 if (cas === undefined) {
-                    cas = await fetchCas();
+                    cas = await fetchCas()
                 }
-                this.casCache.set(pronoteURL, cas);
+                this.casCache.set(pronoteURL, cas)
                 console.log('Final Result: ' + cas)
                 return {
                     cas,
@@ -100,7 +100,7 @@ class PronoteService {
 
                     session.marks('trimester').then((marks) => {
                         if (!marks) {
-                            marks = { subjects: [], empty: true };
+                            marks = { subjects: [], empty: true }
                         } else if (oldCache.marksCache && !oldCache.marksCache.empty) {
                             const marksNotifications = []
                             marks.subjects.forEach((subject) => {
@@ -149,19 +149,19 @@ class PronoteService {
                 pronote.login(pronoteURL, pronoteUsername, pronotePassword, pronoteCAS || 'none', 'student').then((session) => {
                     resolve(session)
                 }).catch((error) => {
-                    const formattedUserCredentials = `(${pronoteUsername}:${pronotePassword}@${pronoteURL}:${pronoteCAS})`;
+                    const formattedUserCredentials = `(${pronoteUsername}:${pronotePassword}@${pronoteURL}:${pronoteCAS})`
                     if (error.code === 1) {
                         console.log(chalk.yellow(`#${fetchID} Connexion à Pronote : CAS est invalide pour ${pronoteUsername} (${pronoteCAS})`))
                     } else if (error.message === 'read ECONNRESET') {
-                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : serveur ${pronoteURL} inaccessible, connexion fermée`));
+                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : serveur ${pronoteURL} inaccessible, connexion fermée`))
                     } else if (error.message === 'Wrong user credentials') {
-                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : mauvais identifiants ${formattedUserCredentials}`));
+                        console.log(chalk.red(`#${fetchID} Connexion à Pronote : mauvais identifiants ${formattedUserCredentials}`))
                     } else if (error.message.startsWith('connect ETIMEDOUT')) {
-                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : timeout lors de l\'authentification à ${pronoteURL}`));
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : timeout lors de l\'authentification à ${pronoteURL}`))
                     } else if (error.message === 'You are being rate limited because of too many failed requests') {
-                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : API de Pronote Notifications bannie suite à de nombreuses connexions invalides ${pronoteURL}`));
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : API de Pronote Notifications bannie suite à de nombreuses connexions invalides ${pronoteURL}`))
                     } else if (error.message === 'Session has expired due to inactivity or error') {
-                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : La session a expiré lors de la connexion ${formattedUserCredentials}`));
+                        console.log(chalk.redBright(`#${fetchID} Connexion à Pronote : La session a expiré lors de la connexion ${formattedUserCredentials}`))
                     } else {
                         console.log(chalk.red(`#${fetchID} ${error.message}`))
                     }
