@@ -145,11 +145,6 @@ class DatabaseService {
                 ON CONFLICT ON CONSTRAINT users_caches_pkey DO
                     UPDATE SET homeworks_cache = excluded.homeworks_cache, marks_cache = excluded.marks_cache, last_update_at = excluded.last_update_at;
             `).then(() => {
-                this.query(`
-                    INSERT INTO users_caches_logs
-                        (pronote_username, pronote_url, homeworks_cache, marks_cache, date) VALUES
-                        ('${pronoteUsername}', '${pronoteURL}', '${homeworksCacheValue}', '${marksCacheValue}', '${date}');
-                `)
                 this.usersCaches = this.usersCaches.filter((cache) => {
                     return !(cache.pronoteUsername === pronoteUsername && cache.pronoteURL === pronoteURL)
                 })
