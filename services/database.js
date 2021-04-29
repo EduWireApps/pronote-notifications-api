@@ -24,7 +24,7 @@ class DatabaseService {
 
     query (query, ...parameters) {
         return new Promise((resolve) => {
-            this.pool.query(query, ...parameters, (error, results) => {
+            this.pool.query(query, parameters, (error, results) => {
                 if (!error) resolve(results.rows)
                 else console.error(error)
             })
