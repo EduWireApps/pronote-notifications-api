@@ -123,7 +123,8 @@ app.post('/logout', async (req, res) => {
     database.createUserLog(payload, {
         route: '/logout',
         appVersion: req.headers['app-version'] || 'unknown',
-        date: new Date()
+        date: new Date(),
+        jwt: token
     })
 
     if (payload.pronoteURL === 'demo') {
@@ -164,7 +165,8 @@ app.post('/settings', async (req, res) => {
         route: '/settings',
         appVersion: req.headers['app-version'] || 'unknown',
         date: new Date(),
-        body: data
+        body: data,
+        jwt: token
     })
 
     if (payload.pronoteURL === 'demo') {
@@ -205,7 +207,8 @@ app.get('/notifications', async (req, res) => {
     database.createUserLog(payload, {
         route: '/notifications',
         appVersion: req.headers['app-version'] || 'unknown',
-        date: new Date()
+        date: new Date(),
+        jwt: token
     })
 
     if (payload.pronoteURL === 'demo') {
@@ -260,7 +263,8 @@ app.get('/login', async (req, res) => {
     database.createUserLog(payload, {
         route: '/login',
         appVersion: req.headers['app-version'] || 'unknown',
-        date: new Date()
+        date: new Date(),
+        jwt: token
     })
 
     if (payload.pronoteURL === 'demo') {
