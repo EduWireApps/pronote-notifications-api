@@ -300,18 +300,6 @@ app.get('/login', async (req, res) => {
             })
         }
 
-        console.log('coucou')
-        console.log({
-            success: true,
-            avatar_base64: user.avatarBase64,
-            full_name: user.fullName,
-            student_class: user.studentClass,
-            establishment: user.establishment,
-            password_invalidated: user.passwordInvalidated,
-            notifications_homeworks: existingToken.notificationsHomeworks,
-            notifications_marks: existingToken.notificationsMarks
-        })
-
         return res.status(200).send({
             success: true,
             avatar_base64: user.avatarBase64,
