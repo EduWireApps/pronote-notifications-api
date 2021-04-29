@@ -238,7 +238,7 @@ class DatabaseService {
                 (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body, created_at) VALUES
                 ($1, $2, $3, null, null, $4, $5, $6, $7);
             `, id, pronoteUsername, pronoteURL, type, title, body, createdAt).then(() => {
-                resolve()
+                resolve(id)
             })
         })
     }

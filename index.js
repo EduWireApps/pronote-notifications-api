@@ -47,7 +47,7 @@ const synchronize = async (studentName) => {
                 const homeworksTokens = tokens.filter((token) => token.notificationsHomeworks).map((token) => token.fcmToken)
                 const marksTokens = tokens.filter((token) => token.notificationsMarks).map((token) => token.fcmToken)
                 notifications.forEach((notificationData) => {
-                    database.createNotification(userAuth, notificationData).then((notificationDataDB) => {
+                    database.createNotification(userAuth, notificationData).then((notificationDBID) => {
                         const notification = {
                             title: notificationData.title,
                             body: notificationData.body
@@ -55,7 +55,7 @@ const synchronize = async (studentName) => {
                         const sentAt = new Date()
                         if (notificationData.type === 'homework' && homeworksTokens.length > 0) {
                             firebase.sendNotification(notification, 'homework', homeworksTokens).then((responses) => {
-                                database.markNotificationSent(notificationDataDB.id, new Date())
+                                database.markNotificationSent(notificationDBID, new Date())
                                 responses.forEach((res, i) => {
                                     const token = marksTokens[i]
                                     database.markLastActiveAt(token, sentAt)
@@ -64,7 +64,7 @@ const synchronize = async (studentName) => {
                             })
                         } else if (notificationData.type === 'mark' && marksTokens.length > 0) {
                             firebase.sendNotification(notification, 'mark', marksTokens).then((responses) => {
-                                database.markNotificationSent(notificationDataDB.id, new Date())
+                                database.markNotificationSent(notificationDBID, new Date())
                                 responses.forEach((res, i) => {
                                     const token = marksTokens[i]
                                     database.markLastActiveAt(token, sentAt)
