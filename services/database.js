@@ -22,9 +22,9 @@ class DatabaseService {
             .on('error', (e) => console.error(e))
     }
 
-    query (query) {
+    query (query, ...parameters) {
         return new Promise((resolve) => {
-            this.pool.query(query, (error, results) => {
+            this.pool.query(query, ...parameters, (error, results) => {
                 if (!error) resolve(results.rows)
                 else console.error(error)
             })
@@ -82,7 +82,7 @@ class DatabaseService {
     fetchFCMTokens () {
         return new Promise((resolve) => {
             this.query(`
-                SELECT * FROM users_tokens
+                SELECT * FROM users_tokens;
             `).then((rows) => {
                 resolve(rows.map((row) => ({
                     pronoteURL: row.pronote_url,
@@ -122,9 +122,9 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 UPDATE users_tokens
-                SET last_active_at = '${date.toISOString()}'
-                WHERE fcm_token = '${token}';
-            `).then(() => {
+                SET last_active_at = $1
+                WHERE fcm_token = $2;
+            `, date.toISOString(), token).then(() => {
                 resolve()
             })
         })
@@ -134,9 +134,9 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 UPDATE users_tokens
-                SET last_success_at = '${date.toISOString()}'
-                WHERE fcm_token = '${token}';
-            `).then(() => {
+                SET last_success_at = $1
+                WHERE fcm_token = $2;
+            `, date.toISOString(), token).then(() => {
                 resolve()
             })
         })
