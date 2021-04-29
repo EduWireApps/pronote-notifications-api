@@ -16,15 +16,9 @@ class PronoteService {
         let newURL = url
         const pronoteIndexEducationRegex = /([a-zA-Z0-9]{8})\.index-education\.net/
         if (newURL.includes('index-education.net') && pronoteIndexEducationRegex.test(newURL)) {
-            const [fullMatch, code] = newURL.match(pronoteIndexEducationRegex)
-            newURL = `https://${code}.index-education.net/pronote/`
+            const matches = newURL.match(pronoteIndexEducationRegex)
+            newURL = `https://${matches[1]}.index-education.net/pronote/`
         }
-        /*
-        if ((!url.endsWith('/pronote/') || !url.endsWith('/pronote')) && (url.includes('/pronote') || url.includes('/pronote/'))) {
-            const lastPosition = url.indexOf('/pronote/')
-            newURL = url.substring(0, lastPosition + '/pronote/'.length)
-        }
-        */
         console.log('Parsed URL ' + newURL)
         return newURL
     }

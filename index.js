@@ -29,15 +29,19 @@ const firebase = new FirebaseService()
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const synchronize = async (studentName) => {
-    const usersSync = database.users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true))
+    const users = await database.fetchUsers()
+    const usersCaches = await database.fetchUsersCache()
+    const usersTokens = await database.fetchFCMTokens()
+
+    const usersSync = users.filter((user) => !user.passwordInvalidated && (studentName ? user.pronoteUsername === studentName : true))
     for (const [index, userAuth] of usersSync.entries()) {
         await sleep(500)
-        const oldCache = database.usersCaches.find((cache) => {
+        const oldCache = usersCaches.find((cache) => {
             return cache.pronoteUsername === userAuth.pronoteUsername && cache.pronoteURL === userAuth.pronoteURL
         })
         pronote.checkSession(userAuth, oldCache, index).then(([notifications, newCache]) => {
             if (notifications.length > 0) {
-                const tokens = database.usersTokens.filter((token) => {
+                const tokens = usersTokens.filter((token) => {
                     return token.pronoteUsername === userAuth.pronoteUsername && token.pronoteURL === userAuth.pronoteURL && token.isActive
                 })
                 const homeworksTokens = tokens.filter((token) => token.notificationsHomeworks).map((token) => token.fcmToken)
@@ -80,8 +84,9 @@ const synchronize = async (studentName) => {
     }
 }
 
-const checkInvalidated = () => {
-    const usersInvalidated = database.users.filter((u) => u.passwordInvalidated)
+const checkInvalidated = async () => {
+    const users = await database.fetchUsers()
+    const usersInvalidated = users.filter((u) => u.passwordInvalidated)
     const failed = []
     usersInvalidated.forEach((user) => {
         if (failed.filter((e) => e === user.pronoteURL).length < 1) {
@@ -94,11 +99,10 @@ const checkInvalidated = () => {
     })
 }
 
-const initDB = Promise.all([database.fetchUsers(), database.fetchCache(), database.fetchTokens(), database.fetchNotifications()])
-initDB.then(() => {
-    if (process.argv.includes('--sync')) synchronize(process.argv[process.argv.indexOf('--sync') + 1] === 'all' ? null : process.argv[process.argv.indexOf('--sync') + 1])
-    if (process.argv.includes('--checkinv')) checkInvalidated()
-})
+const userToSynchronize = process.argv[process.argv.indexOf('--sync') + 1] === 'all' ? null : process.argv[process.argv.indexOf('--sync') + 1]
+if (process.argv.includes('--sync')) synchronize(userToSynchronize)
+if (process.argv.includes('--checkinv')) checkInvalidated()
+
 setInterval(function () {
     synchronize()
 }, 30 * 60 * 1000)
@@ -107,8 +111,6 @@ setInterval(() => {
 }, 24 * 60 * 60 * 1000)
 
 app.post('/logout', async (req, res) => {
-    await initDB
-
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -130,7 +132,7 @@ app.post('/logout', async (req, res) => {
         })
     }
 
-    const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+    const existingToken = await database.verifyFCMToken(payload.fcmToken)
     if (!existingToken) {
         return res.status(500).send({
             success: false,
@@ -148,8 +150,6 @@ app.post('/logout', async (req, res) => {
 })
 
 app.post('/settings', async (req, res) => {
-    await initDB
-
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -173,7 +173,7 @@ app.post('/settings', async (req, res) => {
         })
     }
 
-    const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+    const existingToken = await database.verifyFCMToken(payload.fcmToken)
     if (!existingToken) {
         return res.status(500).send({
             success: false,
@@ -192,8 +192,6 @@ app.post('/settings', async (req, res) => {
 })
 
 app.get('/notifications', async (req, res) => {
-    await initDB
-
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -230,11 +228,8 @@ app.get('/notifications', async (req, res) => {
         })
     }
 
-    const existingUser = database.users.find((user) => {
-        return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
-    })
-
-    if (!existingUser) {
+    const user = await database.fetchUser(payload.pronoteUsername, payload.pronoteURL)
+    if (!user) {
         return res.status(403).send({
             success: false,
             code: 3,
@@ -242,8 +237,7 @@ app.get('/notifications', async (req, res) => {
         })
     }
 
-    const notifications = database.notifications
-        .filter((n) => n.pronoteUsername === existingUser.pronoteUsername && n.pronoteURL === existingUser.pronoteURL)
+    const notifications = (await database.fetchUserNotifications(payload.pronoteUsername, payload.pronoteURL))
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
     return res.status(200).send({
@@ -253,8 +247,6 @@ app.get('/notifications', async (req, res) => {
 })
 
 app.get('/login', async (req, res) => {
-    await initDB
-
     const token = req.headers.authorization
     const payload = jwt.verifyToken(token)
     if (!token || !payload) {
@@ -283,18 +275,15 @@ app.get('/login', async (req, res) => {
         })
     }
 
-    const existingUser = database.users.find((user) => {
-        return user.pronoteUsername === payload.pronoteUsername && user.pronotePassword === payload.pronotePassword
-    })
-
-    if (!existingUser) {
+    const user = await database.fetchUser(payload.pronoteUsername, payload.pronoteURL)
+    if (!user) {
         return res.status(403).send({
             success: false,
             code: 3,
             message: 'Votre compte est introuvable.'
         })
     } else {
-        const existingToken = database.usersTokens.find((userToken) => userToken.fcmToken === payload.fcmToken)
+        const existingToken = await database.verifyFCMToken(payload.fcmToken)
         if (!existingToken) {
             return res.status(500).send({
                 success: false,
@@ -305,10 +294,11 @@ app.get('/login', async (req, res) => {
 
         return res.status(200).send({
             success: true,
-            avatar_base64: existingUser.avatarBase64,
-            full_name: existingUser.fullName,
-            student_class: existingUser.studentClass,
-            establishment: existingUser.establishment,
+            avatar_base64: user.avatarBase64,
+            full_name: user.fullName,
+            student_class: user.studentClass,
+            establishment: user.establishment,
+            password_invalidated: user.passwordInvalidated,
             notifications_homeworks: existingToken.notificationsHomeworks,
             notifications_marks: existingToken.notificationsMarks
         })
@@ -329,7 +319,7 @@ app.get('/establishments', async (req, res) => {
         body: { latitude: req.query.latitude, longitude: req.query.longitude }
     })
 
-    const establishments = await pronote.getEstablishments(req.query.latitude, req.query.longitude)
+    const establishments = (await pronote.getEstablishments(req.query.latitude, req.query.longitude)) || []
 
     return res.status(200).send({
         success: true,
@@ -338,8 +328,6 @@ app.get('/establishments', async (req, res) => {
 })
 
 app.post('/register', async (req, res) => {
-    await initDB
-
     const body = req.body
     const userAuth = {
         pronoteUsername: body.pronote_username,
@@ -387,10 +375,6 @@ app.post('/register', async (req, res) => {
         })
     }
 
-    const existingUser = database.users.find((user) => {
-        return user.pronoteUsername === userAuth.pronoteUsername && user.pronoteURL === userAuth.pronoteURL
-    })
-
     let { cas, session } = await pronote.resolveCas(userAuth)
     userAuth.pronoteCAS = cas
 
@@ -409,8 +393,10 @@ app.post('/register', async (req, res) => {
 
     if (!session) return
 
-    if (existingUser) {
-        if (existingUser.pronotePassword !== userAuth.pronotePassword) {
+    const user = await database.fetchUser(userAuth.pronoteUsername, userAuth.pronoteURL)
+
+    if (user) {
+        if (user.pronotePassword !== userAuth.pronotePassword) {
             database.updateUserPassword({
                 pronoteUsername: userAuth.pronoteUsername,
                 pronoteURL: userAuth.pronoteURL,
@@ -420,10 +406,11 @@ app.post('/register', async (req, res) => {
         database.invalidateUserPassword(userAuth, false)
         res.status(200).send({
             success: true,
-            avatar_base64: existingUser.avatarBase64,
-            full_name: existingUser.fullName,
-            student_class: existingUser.studentClass,
-            establishment: existingUser.establishment,
+            avatar_base64: user.avatarBase64,
+            full_name: user.fullName,
+            student_class: user.studentClass,
+            establishment: user.establishment,
+            password_invalidated: user.passwordInvalidated,
             notifications_homeworks: true,
             notifications_marks: true,
             jwt: token
