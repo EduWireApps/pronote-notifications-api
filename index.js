@@ -241,7 +241,11 @@ app.get('/notifications', async (req, res) => {
     }
 
     const notifications = (await database.fetchUserNotifications(payload.pronoteUsername, payload.pronoteURL))
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => {
+            const createdOrder = b.createdAt.getTime() - a.createdAt.getTime()
+            if (createdOrder !== 0) return createdOrder
+            else return b.body.length - a.body.length
+        })
 
     return res.status(200).send({
         success: true,
