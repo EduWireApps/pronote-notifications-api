@@ -133,7 +133,7 @@ app.post('/logout', async (req, res) => {
         })
     }
 
-    const existingToken = await database.verifyFCMToken(payload.fcmToken)
+    const existingToken = await database.fetchFCMToken(payload.fcmToken)
     if (!existingToken) {
         return res.status(500).send({
             success: false,
@@ -175,7 +175,7 @@ app.post('/settings', async (req, res) => {
         })
     }
 
-    const existingToken = await database.verifyFCMToken(payload.fcmToken)
+    const existingToken = await database.fetchFCMToken(payload.fcmToken)
     if (!existingToken) {
         return res.status(500).send({
             success: false,
@@ -291,7 +291,7 @@ app.get('/login', async (req, res) => {
             message: 'Votre compte est introuvable.'
         })
     } else {
-        const existingToken = await database.verifyFCMToken(payload.fcmToken)
+        const existingToken = await database.fetchFCMToken(payload.fcmToken)
         if (!existingToken) {
             return res.status(500).send({
                 success: false,

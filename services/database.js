@@ -31,13 +31,13 @@ class DatabaseService {
         })
     }
 
-    verifyFCMToken (fcmToken) {
+    fetchFCMToken (fcmToken) {
         return new Promise((resolve) => {
             this.query(`
                 SELECT * FROM users_tokens
                 WHERE fcm_token = $1;
-            `, fcmToken).then(({ rowCount }) => {
-                resolve(rowCount > 0)
+            `, fcmToken).then(({ rowCount, rows }) => {
+                resolve(rowCount > 0 ? rows[0] : null)
             })
         })
     }
