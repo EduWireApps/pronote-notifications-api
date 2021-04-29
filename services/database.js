@@ -13,6 +13,16 @@ const formatUser = (row) => ({
     passwordInvalidated: row.password_invalidated
 })
 
+const formatFCMToken = (row) => ({
+    pronoteURL: row.pronote_url,
+    pronoteUsername: row.pronote_username,
+    fcmToken: row.fcm_token,
+    createdAt: row.created_at,
+    isActive: row.is_active,
+    notificationsMarks: row.notifications_marks,
+    notificationsHomeworks: row.notifications_homeworks
+})
+
 class DatabaseService {
     constructor () {
         this.pool = new Pool(config.database)
@@ -37,7 +47,7 @@ class DatabaseService {
                 SELECT * FROM users_tokens
                 WHERE fcm_token = $1;
             `, fcmToken).then(({ rowCount, rows }) => {
-                resolve(rowCount > 0 ? rows[0] : null)
+                resolve(rowCount > 0 ? formatFCMToken(rows[0]) : null)
             })
         })
     }
@@ -84,15 +94,7 @@ class DatabaseService {
             this.query(`
                 SELECT * FROM users_tokens;
             `).then(({ rows }) => {
-                resolve(rows.map((row) => ({
-                    pronoteURL: row.pronote_url,
-                    pronoteUsername: row.pronote_username,
-                    fcmToken: row.fcm_token,
-                    createdAt: row.created_at,
-                    isActive: row.is_active,
-                    notificationsMarks: row.notifications_marks,
-                    notificationsHomeworks: row.notifications_homeworks
-                })))
+                resolve(rows.map((row) => formatFCMToken(row)))
             })
         })
     }
