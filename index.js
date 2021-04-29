@@ -218,13 +218,11 @@ app.get('/notifications', async (req, res) => {
             success: true,
             notifications: [
                 {
-                    pronoteURL: 'demo',
-                    pronoteUsername: 'demo',
-                    createdAt: randomDate(),
-                    readAt: randomDate(),
-                    sentAt: randomDate(),
-                    body: 'Nouvelle note en HISTOIRE-GEOGRAPHIE',
-                    title: 'Note: 19/20\nMoyenne de la classe: 11.91/20',
+                    created_at: randomDate(),
+                    read_at: randomDate(),
+                    sent_at: randomDate(),
+                    title: 'Nouvelle note en HISTOIRE-GEOGRAPHIE',
+                    body: 'Note: 19/20\nMoyenne de la classe: 11.91/20',
                     type: 'mark'
                 }
             ]
@@ -246,6 +244,14 @@ app.get('/notifications', async (req, res) => {
             if (createdOrder !== 0) return createdOrder
             else return b.body.length - a.body.length
         })
+        .map((notif) => ({
+            created_at: notif.createdAt,
+            read_at: notif.readAt,
+            sent_at: notif.sentAt,
+            title: notif.title,
+            body: notif.body,
+            type: notif.type
+        }))
 
     return res.status(200).send({
         success: true,
