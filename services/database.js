@@ -153,7 +153,7 @@ class DatabaseService {
                     ($1, $2, $3, $4, $5)
                 ON CONFLICT ON CONSTRAINT users_caches_pkey DO
                     UPDATE SET homeworks_cache = excluded.homeworks_cache, marks_cache = excluded.marks_cache, last_update_at = excluded.last_update_at;
-            `, pronoteUsername, pronoteURL, homeworksCache, marksCache, date).then(() => {
+            `, pronoteUsername, pronoteURL, JSON.stringify(homeworksCache), JSON.stringify(marksCache), date).then(() => {
                 resolve()
             })
         })
