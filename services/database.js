@@ -24,8 +24,8 @@ class DatabaseService {
 
     query (query, ...parameters) {
         return new Promise((resolve) => {
-            this.pool.query(query, parameters, (error, results) => {
-                if (!error) resolve(results.rows)
+            this.pool.query(query, parameters, (error, res) => {
+                if (!error) resolve(res)
                 else console.error(error)
             })
         })
@@ -36,8 +36,8 @@ class DatabaseService {
             this.query(`
                 SELECT * FROM users_tokens
                 WHERE fcm_token = $1;
-            `, fcmToken).then(({ rows }) => {
-                resolve(!!rows[0])
+            `, fcmToken).then(({ rowCount }) => {
+                resolve(rowCount > 0)
             })
         })
     }
@@ -48,8 +48,8 @@ class DatabaseService {
                 SELECT * FROM users
                 WHERE pronote_username = $1
                 AND pronote_url = $2;
-            `, pronoteUsername, pronoteURL).then(({ rows }) => {
-                resolve(rows[0] ? formatUser(rows[0]) : null)
+            `, pronoteUsername, pronoteURL).then(({ rows, rowCount }) => {
+                resolve(rowCount > 0 ? formatUser(rows[0]) : null)
             })
         })
     }
@@ -58,7 +58,7 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 SELECT * FROM users;
-            `).then((rows) => {
+            `).then(({ rows }) => {
                 resolve(rows.map((row) => formatUser(row)))
             })
         })
@@ -68,7 +68,7 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 SELECT * FROM users_caches;
-            `).then((rows) => {
+            `).then(({ rows }) => {
                 resolve(rows.map((row) => ({
                     pronoteURL: row.pronote_url,
                     pronoteUsername: row.pronote_username,
@@ -83,7 +83,7 @@ class DatabaseService {
         return new Promise((resolve) => {
             this.query(`
                 SELECT * FROM users_tokens;
-            `).then((rows) => {
+            `).then(({ rows }) => {
                 resolve(rows.map((row) => ({
                     pronoteURL: row.pronote_url,
                     pronoteUsername: row.pronote_username,
@@ -103,7 +103,7 @@ class DatabaseService {
                 SELECT * FROM notifications
                 WHERE pronote_username = $1
                 AND pronote_url = $2;
-            `, pronoteUsername, pronoteURL).then((rows) => {
+            `, pronoteUsername, pronoteURL).then(({ rows }) => {
                 resolve(rows.map((row) => ({
                     pronoteURL: row.pronote_url,
                     pronoteUsername: row.pronote_username,
