@@ -54,7 +54,7 @@ class DatabaseService {
     fetchUser (pronoteUsername, pronoteURL) {
         return new Promise((resolve) => {
             this.query(`
-                SELECT * FROM users
+                SELECT * FROM users_2021
                 WHERE pronote_username = $1
                 AND pronote_url = $2;
             `, pronoteUsername, pronoteURL).then(({ rows, rowCount }) => {
