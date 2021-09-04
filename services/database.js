@@ -101,7 +101,7 @@ class DatabaseService {
     fetchUserNotifications (pronoteUsername, pronoteURL) {
         return new Promise((resolve) => {
             this.query(`
-                SELECT * FROM notifications
+                SELECT * FROM notifications_2021
                 WHERE pronote_username = $1
                 AND pronote_url = $2;
             `, pronoteUsername, pronoteURL).then(({ rows }) => {
@@ -233,7 +233,7 @@ class DatabaseService {
             const id = Math.random().toString(36).substr(2, 9)
             const createdAt = new Date().toISOString()
             this.query(`
-                INSERT INTO notifications
+                INSERT INTO notifications_2021
                 (notification_id, pronote_username, pronote_url, sent_at, read_at, type, title, body, created_at) VALUES
                 ($1, $2, $3, null, null, $4, $5, $6, $7);
             `, id, pronoteUsername, pronoteURL, type, title, body, createdAt).then(() => {
