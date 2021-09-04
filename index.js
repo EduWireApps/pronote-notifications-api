@@ -103,6 +103,8 @@ const userToSynchronize = process.argv[process.argv.indexOf('--sync') + 1] === '
 if (process.argv.includes('--sync')) synchronize(userToSynchronize)
 if (process.argv.includes('--checkinv')) checkInvalidated()
 
+synchronize()
+
 setInterval(function () {
     synchronize()
 }, 30 * 60 * 1000)
