@@ -280,7 +280,6 @@ app.get('/login', async (req, res) => {
     if (payload.pronoteURL === 'demo') {
         return res.status(200).send({
             success: true,
-            avatar_base64: null,
             full_name: 'Sarah Kelly',
             student_class: '204',
             establishment: 'Lycée Gustave Eiffel',
@@ -308,7 +307,6 @@ app.get('/login', async (req, res) => {
 
         return res.status(200).send({
             success: true,
-            avatar_base64: user.avatarBase64,
             full_name: user.fullName,
             student_class: user.studentClass,
             establishment: user.establishment,
@@ -379,7 +377,6 @@ app.post('/register', async (req, res) => {
     if (userAuth.pronoteURL === 'demo') {
         return res.status(200).send({
             success: true,
-            avatar_base64: null,
             full_name: 'Sarah Kelly',
             student_class: '204',
             establishment: 'Lycée Gustave Eiffel',
@@ -420,7 +417,6 @@ app.post('/register', async (req, res) => {
         database.invalidateUserPassword(userAuth, false)
         res.status(200).send({
             success: true,
-            avatar_base64: user.avatarBase64,
             full_name: user.fullName,
             student_class: user.studentClass,
             establishment: user.establishment,
@@ -430,40 +426,25 @@ app.post('/register', async (req, res) => {
             jwt: token
         })
     } else {
-        const fetchAvatarPm = new Promise((resolve) => {
-            if (!session.user.avatar) resolve()
-            else {
-                fetch(session.user.avatar).then((result) => {
-                    result.buffer().then((buffer) => {
-                        const imageBuffer = Buffer.from(buffer).toString('base64')
-                        resolve(imageBuffer)
-                    })
-                }).catch(() => resolve())
+        res.status(200).send({
+            success: true,
+            full_name: session.user.name,
+            student_class: session.user.studentClass.name,
+            establishment: session.user.establishment.name,
+            notifications_homeworks: true,
+            notifications_marks: true,
+            jwt: token
+        })
+        database.createUser({
+            ...userAuth,
+            ...{
+                fullName: session.user.name,
+                studentClass: session.user.studentClass.name,
+                establishment: session.user.establishment.name
             }
         })
-        fetchAvatarPm.then((imageBuffer) => {
-            res.status(200).send({
-                success: true,
-                avatar_base64: imageBuffer || '',
-                full_name: session.user.name,
-                student_class: session.user.studentClass.name,
-                establishment: session.user.establishment.name,
-                notifications_homeworks: true,
-                notifications_marks: true,
-                jwt: token
-            })
-            database.createUser({
-                ...userAuth,
-                ...{
-                    avatarBase64: imageBuffer || '',
-                    fullName: session.user.name,
-                    studentClass: session.user.studentClass.name,
-                    establishment: session.user.establishment.name
-                }
-            })
-            pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
-                database.updateUserCache(userAuth, cache)
-            })
+        pronote.checkSession(userAuth, {}).then(([notifications, cache]) => {
+            database.updateUserCache(userAuth, cache)
         })
     }
     database.createOrUpdateToken(userAuth, userAuth.fcmToken, userAuth.deviceID)

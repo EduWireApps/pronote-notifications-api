@@ -6,7 +6,6 @@ const formatUser = (row) => ({
     pronoteUsername: row.pronote_username,
     pronotePassword: row.pronote_password,
     pronoteCAS: row.pronote_cas,
-    avatarBase64: row.avatar_base64,
     fullName: row.full_name,
     studentClass: row.student_class,
     establishment: row.establishment,
@@ -67,7 +66,7 @@ class DatabaseService {
     fetchUsers () {
         return new Promise((resolve) => {
             this.query(`
-                SELECT * FROM users;
+                SELECT * FROM users_2021;
             `).then(({ rows }) => {
                 resolve(rows.map((row) => formatUser(row)))
             })
