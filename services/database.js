@@ -161,7 +161,7 @@ class DatabaseService {
     invalidateUserPassword ({ pronoteUsername, pronoteURL }, invalidate = true) {
         return new Promise((resolve) => {
             this.query(`
-                UPDATE users
+                UPDATE users_2021
                 SET password_invalidated = $1
                 WHERE pronote_username = $2
                 AND pronote_url = $3;
@@ -174,7 +174,7 @@ class DatabaseService {
     updateUserPassword ({ pronoteUsername, pronoteURL, newPassword }) {
         return new Promise((resolve) => {
             this.query(`
-                UPDATE users
+                UPDATE users_2021
                 SET pronote_password = $1
                 WHERE pronote_username = $2
                 AND pronote_url = $3;
@@ -187,7 +187,7 @@ class DatabaseService {
     createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass, establishment }) {
         return new Promise((resolve) => {
             this.query(`
-                INSERT INTO users
+                INSERT INTO users_2021
                 (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment, created_at) VALUES
                 ($1, $2, $3, $4, $5, $6, $7, $8, $9);
             `, pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass, establishment, new Date().toISOString()).then(() => {
@@ -245,7 +245,7 @@ class DatabaseService {
     markNotificationSent (id, sentAt) {
         return new Promise((resolve) => {
             this.query(`
-                UPDATE notifications
+                UPDATE notifications_2021
                 SET sent_at = $1
                 WHERE notification_id = $2;
             `, sentAt.toISOString(), id).then(() => {
@@ -257,7 +257,7 @@ class DatabaseService {
     markNotificationRead (id, readAt) {
         return new Promise((resolve) => {
             this.query(`
-                UPDATE notifications
+                UPDATE notifications_2021
                 SET read_at = $1
                 WHERE notification_id = $2;
             `, readAt.toISOString(), id).then(() => {
