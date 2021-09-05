@@ -2548,11 +2548,12 @@ progress@^2.0.0:
 
 pronote-api@EduWireApps/pronote-api:
   version "2.3.4"
-  resolved "https://codeload.github.com/EduWireApps/pronote-api/tar.gz/c85c36fa816f1f8e7730fcb8b3a518336d365173"
+  resolved "https://codeload.github.com/EduWireApps/pronote-api/tar.gz/1a3e27039b6c0c3eb005e05158de22411c3cad11"
   dependencies:
     axios "^0.21.1"
     body-parser "^1.19.0"
     graphql "^15.3.0"
+    https-proxy-agent "^5.0.0"
     jsdom "^16.5.2"
     node-forge "0.6.33"
     pako "^1.0.11"
