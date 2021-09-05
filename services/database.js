@@ -184,13 +184,13 @@ class DatabaseService {
         })
     }
 
-    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass, establishment }) {
+    createUser ({ pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, fullName, studentClass, establishment }) {
         return new Promise((resolve) => {
             this.query(`
                 INSERT INTO users_2021
-                (pronote_username, pronote_password, pronote_url, pronote_cas, avatar_base64, full_name, student_class, establishment, created_at) VALUES
+                (pronote_username, pronote_password, pronote_url, pronote_cas, full_name, student_class, establishment, created_at) VALUES
                 ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-            `, pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, avatarBase64, fullName, studentClass, establishment, new Date().toISOString()).then(() => {
+            `, pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, fullName, studentClass, establishment, new Date().toISOString()).then(() => {
                 resolve()
             })
         })
