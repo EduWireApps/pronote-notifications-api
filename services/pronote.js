@@ -55,7 +55,7 @@ class PronoteService {
                 if (cas === undefined) {
                     cas = await fetchCas()
                 }
-                this.casCache.set(pronoteURL, cas)
+                if (cas) this.casCache.set(pronoteURL, cas)
                 console.log('Final Result: ' + cas)
                 return {
                     cas,
