@@ -44,17 +44,19 @@ class PronoteService {
                     cas: possiblesCas
                 }
             } else {
-                let cas = null
-                let results = null
                 const fetchCas = async () => {
-                    const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas).catch(() => {}))
-                    results = await Promise.all(promises)
-                    return possiblesCas[results.findIndex((r) => r !== undefined)]
+                    const promises = possiblesCas.map((cas) => pronote.login(pronoteURL, pronoteUsername, pronotePassword, cas))
+                    const results = await Promise.all(promises)
+                    const workedSessionIndex = results.findIndex((r) => r !== undefined);
+                    if (!workedSessionIndex) {
+                        console.log(results);
+                    }
+                    return {
+                        cas: possiblesCas[workedSessionIndex],
+                        session: results[workedSessionIndex]
+                    };
                 }
-                cas = await fetchCas()
-                if (cas === undefined) {
-                    cas = await fetchCas()
-                }
+                const { cas, session } = await fetchCas()
                 if (cas) this.casCache.set(pronoteURL, cas)
                 console.log('Final Result: ' + cas)
                 return {

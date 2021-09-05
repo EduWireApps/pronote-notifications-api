@@ -344,6 +344,11 @@ app.get('/establishments', async (req, res) => {
 
 app.post('/register', async (req, res) => {
     const body = req.body
+
+    if (!body.pronote_url) {
+        return void console.log(body);
+    }
+
     const userAuth = {
         pronoteUsername: body.pronote_username,
         pronotePassword: body.pronote_password,
