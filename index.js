@@ -1,4 +1,5 @@
 require('tls').DEFAULT_MIN_VERSION = 'TLSv1'
+require('dotenv').config();
 
 const config = require('./config.json')
 const fetch = require('node-fetch')
