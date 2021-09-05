@@ -189,7 +189,7 @@ class DatabaseService {
             this.query(`
                 INSERT INTO users_2021
                 (pronote_username, pronote_password, pronote_url, pronote_cas, full_name, student_class, establishment, created_at) VALUES
-                ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+                ($1, $2, $3, $4, $5, $6, $7, $8);
             `, pronoteUsername, pronotePassword, pronoteURL, pronoteCAS, fullName, studentClass, establishment, new Date().toISOString()).then(() => {
                 resolve()
             })
